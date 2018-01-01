@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { 
-  Platform, 
-  SafeAreaView, 
+  Platform,
   TouchableOpacity,
   KeyboardAvoidingView,
   View,
@@ -20,6 +19,7 @@ import AlertUtils from 'utilities/AlertUtils';
 import BlocklySync from 'utilities/BlocklySync';
 import * as action from 'actions/BlocklyAction';
 
+const debugMode = false;
 const MaterialHeaderButton = props => (
   <HeaderButton {...props} IconComponent={MaterialIcons} iconSize={23} color="white" />
 );
@@ -278,17 +278,18 @@ class BlocklyComponent extends Component {
   };
 
   render() {
+    const debugPath = 'http://localhost:8083/index.html';
     const htmlPath = (Platform.OS === 'android') 
       ? 'file:///android_asset/blockly/index.html' 
       : './blockly/index.html';
 
     return (
       <View style={styles.safeAreaContainer}>
-        <SafeAreaView style={styles.blockly}>
+        <View style={styles.blockly}>
           <WebView
             ref={webViewRef => (WebViewRef = webViewRef)}
             originWhitelist={['*']}
-            source={{ uri: htmlPath }}
+            source={{ uri: debugMode ? debugPath : htmlPath }}
             onMessage={this.onWebViewMessage}
             javaScriptEnabled={true}
             domStorageEnabled={true}
@@ -296,7 +297,7 @@ class BlocklyComponent extends Component {
           />
           {this.renderSaveDialog()}
           {this.renderOpenDialog()}
-        </SafeAreaView>
+        </View>
       </View>
     );
   }
