@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+    <script src="../../../node_modules/blockly/blockly_compressed.js"></script>
+    <script src="../../../node_modules/blockly/blocks_compressed.js"></script>
+    <script src="../../../node_modules/blockly/msg/js/en.js"></script>
+    
+    <link rel="stylesheet" type="text/css" href="./style.css">
+  </head>
+  <body>
+    <div id="blockly-div"></div>
+    
+    <xml id="_toolbox" style="display: none;">
+      <block type="controls_if"></block>
+      <block type="controls_repeat_ext"></block>
+      <block type="logic_compare"></block>
+      <block type="math_number"></block>
+      <block type="math_arithmetic"></block>
+      <block type="text"></block>
+      <block type="text_print"></block>
+    </xml>
+
+    <xml id="toolbox">
+      <category name="Logic" colour="210">
+        <block type="controls_if"></block>
+        <block type="logic_boolean"></block>
+      </category>
+      <category name="Loops" colour="120">
+        <block type="controls_repeat_ext"></block>
+      </category>
+      <category name="Math" colour="230">
+        <block type="math_number"></block>
+        <block type="math_arithmetic"></block>
+      </category>
+      <category name="Text" colour="330">
+        <block type="text"></block>
+        <block type="text_print"></block>
+      </category>
+      <!--category name="Colour" colour="20">...</category-->
+      <category name="Colors" colour="20" custom="COLOR_PALETTE"></category>
+    </xml>
+
+
+    <script>
+      var workspace = Blockly.inject('blockly-div', {
+        toolbox: document.getElementById('toolbox'),
+        css: true,
+        toolboxPosition: 'start',
+        scrollbars: false,
+        sounds: true,
+        horizontalLayout: true
+      });
+    </script>
+  </body>
+</html>
