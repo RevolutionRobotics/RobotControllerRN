@@ -121,11 +121,22 @@
     </xml>
 
     <script>
+      var generateXml = function(workspace) {
+        var xmlDom = Blockly.Xml.workspaceToDom(workspace);
+        return Blockly.Xml.domToPrettyText(xmlDom);
+      }
+
       var workspace = Blockly.inject('blockly-div', {
         toolbox: document.getElementById('toolbox'),
         css: true,
         scrollbars: false,
         horizontalLayout: false
+      });
+
+      workspace.addChangeListener(function(event) {
+        if (event.type !== Blockly.Events.UI) {
+          window.postMessage(generateXml(workspace), '*', false);
+        }
       });
     </script>
   </body>
