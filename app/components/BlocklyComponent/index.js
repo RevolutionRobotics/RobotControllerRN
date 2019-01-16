@@ -26,7 +26,7 @@ export default class BlocklyComponent extends Component {
 
     return (
       <WebView
-        source={require('./blockly.html')}
+        source={require('../../../assets/blockly/index.html')}
         onMessage={this.onWebViewMessage}
         useWebKit={true}
       />
