@@ -8,7 +8,8 @@ export default class BlocklyComponent extends Component {
     super(props);
 
     this.state = {
-      xmlData: ''
+      xmlData: '',
+      pythonCode: ''
     };
   }
 
@@ -34,8 +35,12 @@ export default class BlocklyComponent extends Component {
   };
 
   onWebViewMessage = event => {
+    const data = JSON.parse(event.nativeEvent.data);
+
     this.setState({
-      xmlData: event.nativeEvent.data
+      ...this.state,
+      xmlData: data.xmlData,
+      pythonCode: data.pythonCode
     });
   };
 

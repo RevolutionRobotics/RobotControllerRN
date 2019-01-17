@@ -25,9 +25,11 @@ project.xcworkspace
 # Android/IntelliJ
 #
 build/
+*/app/src/main/assets/blockly/*
 .idea
 .gradle
 local.properties
+assets_blockly_index.html
 *.iml
 
 # node.js
