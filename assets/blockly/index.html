@@ -37,7 +37,7 @@
           <field name="VAR">i</field>
           <value name="FROM">
             <block type="math_number">
-              <field name="NUM">1</field>
+              <field name="NUM">0</field>
             </block>
           </value>
           <value name="TO">
@@ -135,7 +135,8 @@
         toolbox: document.getElementById('toolbox'),
         css: true,
         scrollbars: false,
-        horizontalLayout: false
+        horizontalLayout: false,
+        oneBasedIndex: false
       });
 
       workspace.addChangeListener(function(event) {

@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { 
-  StyleSheet,
   Platform, 
   PermissionsAndroid,
   Alert, 
@@ -10,6 +9,7 @@ import {
   TouchableOpacity
 } from 'react-native';
 import { BleManager } from 'react-native-ble-plx';
+import { bleStyle as styles } from '../styles';
 
 export default class BleSettingsComponent extends Component {
 
@@ -41,7 +41,7 @@ export default class BleSettingsComponent extends Component {
 
   renderListOrEmpty = () => {
     return this.state.foundDevices.length === 0 ?
-    (<Text style={{styles.emptyString}}>{this.state.emptyString}</Text>) : (
+    (<Text style={styles.emptyString}>{this.state.emptyString}</Text>) : (
       <FlatList 
         style={styles.deviceList}
         contentContainerStyle={styles.listBottomPadding}
@@ -55,7 +55,9 @@ export default class BleSettingsComponent extends Component {
 
   renderItem = ({item, index}) => (
     <TouchableOpacity style={styles.deviceItem} onPress={() => this.connect(item)}>
-      <Text style={styles.deviceItemTitle}>{item.localName || item.id}</Text>
+      <Text style={styles.deviceItemTitle}>
+        {item.localName || item.name || item.id}
+      </Text>
     </TouchableOpacity>
   );
 
@@ -112,11 +114,10 @@ export default class BleSettingsComponent extends Component {
         // Handle error (scanning will be stopped automatically)
         this.showError(error);
         return;
-      //} else if (this.state.foundDevices.includes(device) || !device.name) {
       } else {
-        const deviceInList = this.state.foundDevices.some(element => {
-          return element.id === device.id;
-        });
+        const deviceInList = this.state.foundDevices.some(element => (
+          element.id === device.id
+        ));
 
         if (deviceInList) {
           return;
@@ -140,51 +141,18 @@ export default class BleSettingsComponent extends Component {
 
     // Proceed with connection.
     device.connect()
-      .then(device => device.discoverAllServicesAndCharacteristics())
+      .then(device => {
+        console.log('CONNECTED TO BLE DEVICE');
+        return device.discoverAllServicesAndCharacteristics(device.id);
+      })
       .then(device => {
         console.log('LISTING DEVICE CHARACTERISTICS...');
         console.log(device);
+        device.services()
+          .then(services => console.log(services));
+        //console.log(device);
         // Do work on device with services and characteristics
       })
       .catch(error => this.showError(error));
   };
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1, 
-    alignSelf: 'stretch',
-    justifyContent: 'center', 
-    alignItems: 'center'
-  },
-  deviceList: {
-    flex: 1,
-    alignSelf: 'stretch',
-    paddingBottom: 20
-  },
-  listBottomPadding: {
-    paddingBottom: 50
-  },
-  emptyString: {
-    padding: 30
-  },
-  deviceItem: {
-    flex: 1,
-    alignItems: 'center',
-    backgroundColor: 'white',
-    marginTop: 20,
-    marginHorizontal: 20,
-    borderRadius: 2,
-    shadowColor: 'black',
-    shadowOpacity: 0.3,
-    shadowRadius: 1,
-    shadowOffset: {
-      height: 1,
-      width: 0.3,
-    },
-    elevation: 3
-  },
-  deviceItemTitle: {
-    padding: 20
-  }
-});
