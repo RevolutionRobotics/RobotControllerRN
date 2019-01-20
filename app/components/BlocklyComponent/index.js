@@ -13,41 +13,30 @@ export default class BlocklyComponent extends Component {
     };
   }
 
-  renderWebView = isAndroid => {
-    if (isAndroid) {
-      return (
-        <WebView
-          source={{ uri: 'file:///android_asset/blockly/index.html' }}
-          onMessage={this.onWebViewMessage}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-        />
-      );
-    }
-
-    return (
-      <WebView
-        source={require('../../../assets/blockly/index.html')}
-        onMessage={this.onWebViewMessage}
-        useWebKit={true}
-      />
-    );
-  };
-
   onWebViewMessage = event => {
     const data = JSON.parse(event.nativeEvent.data);
 
     this.setState({
-      ...this.state,
       xmlData: data.xmlData,
       pythonCode: data.pythonCode
     });
   };
 
   render() {
+    const htmlPath = (Platform.OS === 'android') 
+      ? 'file:///android_asset/blockly/index.html' 
+      : './blockly/index.html';
+
     return (
       <View {...this.props}>
-        { this.renderWebView(Platform.OS === 'android') }
+        <WebView
+          originWhitelist={['*']}
+          source={{ uri: htmlPath }}
+          onMessage={this.onWebViewMessage}
+          javaScriptEnabled={true}
+          domStorageEnabled={true}
+          useWebKit={true}
+        />
       </View>
     );
   }
