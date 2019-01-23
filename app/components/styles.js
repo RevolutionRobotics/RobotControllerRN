@@ -48,6 +48,10 @@ const controllerStyle = StyleSheet.create({
 });
 
 const blocklyStyle = StyleSheet.create({
+  safeAreaContainer: {
+    flex: 1,
+    backgroundColor: '#dddddd'
+  },
   container: {
     flex: 1,
     justifyContent: 'center',

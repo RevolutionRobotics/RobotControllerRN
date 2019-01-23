@@ -1,10 +1,6 @@
 import React, { Component } from 'react';
-import { StatusBar } from 'react-native';
-import { 
-  createStackNavigator,
-  createAppContainer,
-  SafeAreaView 
-} from 'react-navigation';
+import { StatusBar, View } from 'react-native';
+import { createStackNavigator, createAppContainer } from 'react-navigation';
 
 import CardListComponent from '../CardListComponent';
 import BleSettingsComponent from '../BleSettingsComponent';
@@ -43,7 +39,7 @@ export default class NavigatorComponent extends Component {
 
   render() {
     return (
-      <SafeAreaView style={{ flex: 1 }}>
+      <View style={{ flex: 1 }}>
         <StatusBar 
           backgroundColor={'#234d70'}
           barStyle={'light-content'}
@@ -51,7 +47,7 @@ export default class NavigatorComponent extends Component {
           hidden={true}
         />
         <AppContainer screenProps={this.props} />
-      </SafeAreaView>
+      </View>
     );
   }
 }

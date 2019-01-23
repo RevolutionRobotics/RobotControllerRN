@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import { 
   Platform, 
   PermissionsAndroid,
-  Alert, 
-  View, 
+  Alert,  
   Text,
   FlatList,
   TouchableOpacity
 } from 'react-native';
+import { SafeAreaView } from 'react-navigation';
 import { connect } from 'react-redux';
 import { BleManager } from 'react-native-ble-plx';
 import { bleStyle as styles } from '../styles';
@@ -39,9 +39,9 @@ class BleSettingsComponent extends Component {
 
   render() {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         {this.renderListOrEmpty()}
-      </View>
+      </SafeAreaView>
     );
   }
 

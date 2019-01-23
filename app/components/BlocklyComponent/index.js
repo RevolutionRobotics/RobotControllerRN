@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Platform, View } from 'react-native';
+import { Platform, SafeAreaView, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { connect } from 'react-redux';
 import { blocklyStyle as styles } from '../styles';
@@ -30,15 +30,17 @@ class BlocklyComponent extends Component {
       : './blockly/index.html';
 
     return (
-      <View style={styles.blockly}>
-        <WebView
-          originWhitelist={['*']}
-          source={{ uri: htmlPath }}
-          onMessage={this.onWebViewMessage}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          useWebKit={true}
-        />
+      <View style={styles.safeAreaContainer}>
+        <SafeAreaView style={styles.blockly}>
+          <WebView
+            originWhitelist={['*']}
+            source={{ uri: htmlPath }}
+            onMessage={this.onWebViewMessage}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            useWebKit={true}
+          />
+        </SafeAreaView>
       </View>
     );
   }

@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import { 
-  View, 
+import {  
   FlatList, 
   TouchableOpacity, 
   Text 
 } from 'react-native';
+import { SafeAreaView } from 'react-navigation';
 import { cardListStyle as styles } from '../styles';
 
 const listData = [
@@ -43,7 +43,7 @@ export default class CardListComponent extends Component {
 
   render() {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <FlatList
           data={listData}
           renderItem={this.renderItem}
@@ -51,7 +51,7 @@ export default class CardListComponent extends Component {
           removeClippedSubviews={true}
           keyExtractor={(item, index) => item.title}
         />
-      </View>
+      </SafeAreaView>
     );
   }
 }
