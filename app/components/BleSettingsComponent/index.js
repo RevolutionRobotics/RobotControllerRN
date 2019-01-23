@@ -8,10 +8,16 @@ import {
   FlatList,
   TouchableOpacity
 } from 'react-native';
+import { connect } from 'react-redux';
 import { BleManager } from 'react-native-ble-plx';
 import { bleStyle as styles } from '../styles';
+import { name as appName } from '../../../app.json';
 
-export default class BleSettingsComponent extends Component {
+class BleSettingsComponent extends Component {
+
+  static navigationOptions = ({navigation}) => ({
+    title: 'BLE Device List'
+  });
 
   constructor() {
     super();
@@ -76,7 +82,6 @@ export default class BleSettingsComponent extends Component {
   };
 
   handlePermissionRequest = async () => {
-    const appName = 'RobotController';
     const granted = await PermissionsAndroid.request(
       PermissionsAndroid.PERMISSIONS.ACCESS_COARSE_LOCATION,
       {
@@ -91,7 +96,7 @@ export default class BleSettingsComponent extends Component {
       this.showError({
         message: 'Can\'t continue BLE device scan',
         reason: 'Requested permissions must be granted'
-      }, () => console.log('TODO: Will need to close component here...'));
+      }, this.props.navigation.goBack);
     }
   };
 
@@ -99,7 +104,7 @@ export default class BleSettingsComponent extends Component {
     Alert.alert(
       error.message,
       error.reason,
-      [{ text: 'OK', onPress: callback() }],
+      [{ text: 'OK', onPress: callback }],
       { cancelable: false }
     );
   };
@@ -156,3 +161,13 @@ export default class BleSettingsComponent extends Component {
       .catch(error => this.showError(error));
   };
 }
+
+const mapStateToProps = state => ({
+  // TODO: Implement mapping...
+});
+
+const mapDispatchToProps = dispatch => ({
+  // TODO: Implement mapping...
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(BleSettingsComponent);

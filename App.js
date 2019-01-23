@@ -13,18 +13,17 @@ import {
   View,
   SafeAreaView
 } from 'react-native';
-import { appStyle as styles } from './app/components/styles.js';
-
-import BlocklyComponent from './app/components/BlocklyComponent';
-import BleSettingsComponent from './app/components/BleSettingsComponent';
+import { createStore } from 'redux';
+import { Provider } from 'react-redux';
+import NavigatorComponent from './app/components/NavigatorComponent';
+import reducer from './app/reducers/index';
 
 export default class App extends Component {
   render() {
     return (
-      <SafeAreaView style={styles.container}>
-        {/*<BlocklyComponent style={styles.blockly} />*/}
-        <BleSettingsComponent />
-      </SafeAreaView>
+      <Provider store={createStore(reducer)}>
+        <NavigatorComponent />
+      </Provider>
     );
   }
 }

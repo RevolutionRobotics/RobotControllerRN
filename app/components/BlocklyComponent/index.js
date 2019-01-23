@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
 import { Platform, View } from 'react-native';
 import { WebView } from 'react-native-webview';
+import { connect } from 'react-redux';
+import { blocklyStyle as styles } from '../styles';
 
-export default class BlocklyComponent extends Component {
+class BlocklyComponent extends Component {
 
   constructor(props) {
     super(props);
@@ -28,7 +30,7 @@ export default class BlocklyComponent extends Component {
       : './blockly/index.html';
 
     return (
-      <View {...this.props}>
+      <View style={styles.blockly}>
         <WebView
           originWhitelist={['*']}
           source={{ uri: htmlPath }}
@@ -41,3 +43,13 @@ export default class BlocklyComponent extends Component {
     );
   }
 }
+
+const mapStateToProps = state => ({
+  // TODO: Implement mapping...
+});
+
+const mapDispatchToProps = dispatch => ({
+  // TODO: Implement mapping...
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(BlocklyComponent);
