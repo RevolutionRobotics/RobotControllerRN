@@ -19,6 +19,7 @@ const defaultValues = {
 const cardListStyle = StyleSheet.create({
   container: {
     flex: 1,
+    alignItems: 'center',
     backgroundColor: defaultValues.appBackground
   },
   card: {
