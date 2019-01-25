@@ -6,16 +6,17 @@ import {
   Text,
   PanResponder
 } from 'react-native';
+import { connect } from 'react-redux';
 import { controllerStyle as styles } from '../styles';
 
-export default class ControllerComponent extends Component {
+class ControllerComponent extends Component {
 
   static navigationOptions = {
     title: 'Remote Controller'
   };
 
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
 
     this.joystickSize = 180;
     this.state = {
@@ -119,3 +120,13 @@ export default class ControllerComponent extends Component {
     );
   }
 }
+
+const mapStateToProps = state => ({
+  uartCharacteristic: state.BleReducer.get('uartCharacteristic')
+});
+
+const mapDispatchToProps = dispatch => ({
+  // TODO: Implement mapping... 
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(ControllerComponent);

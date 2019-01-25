@@ -1,9 +1,15 @@
-import { combineReducers } from 'redux';
+import { combineReducers, createStore } from 'redux';
 
 import BleReducer from './ble';
 import BlocklyReducer from './blockly';
 
-export default combineReducers({
+const AppReducers = combineReducers({
   BleReducer,
   BlocklyReducer
 });
+
+const rootReducer = (state, action) => {
+  return AppReducers(state, action);
+}
+
+export default createStore(rootReducer);

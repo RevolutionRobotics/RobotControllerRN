@@ -12,6 +12,7 @@ import { connect } from 'react-redux';
 import { BleManager } from 'react-native-ble-plx';
 import { bleStyle as styles } from '../styles';
 import { name as appName } from '../../../app.json';
+import * as action from '../../actions/BleAction';
 
 class BleSettingsComponent extends Component {
 
@@ -19,11 +20,13 @@ class BleSettingsComponent extends Component {
     title: 'BLE Device List'
   };
 
-  constructor() {
-    super();
+  constructor(props) {
+    super(props);
     this.manager = new BleManager();
 
     this.state = {
+      uartServiceId: '0000ffe0-0000-1000-8000-00805f9b34fb',
+      uartCharacteristicId: '0000ffe1-0000-1000-8000-00805f9b34fb',
       foundDevices: [],
       emptyString: 'Initializing BLE device list...'
     }
@@ -38,8 +41,7 @@ class BleSettingsComponent extends Component {
   }
 
   componentWillUnmount() {
-    this.manager.destroy();
-    delete this.manager;
+    this.manager.stopDeviceScan();
   }
 
   render() {
@@ -134,8 +136,6 @@ class BleSettingsComponent extends Component {
         }
       }
 
-      //console.log(device);
-
       this.setState({
         foundDevices: [
           ...this.state.foundDevices,
@@ -159,9 +159,25 @@ class BleSettingsComponent extends Component {
         console.log('LISTING DEVICE CHARACTERISTICS...');
         console.log(device);
         device.services()
-          .then(services => console.log(services));
-        //console.log(device);
-        // Do work on device with services and characteristics
+          .then(services => {
+            const uartService = services.find(item => (
+              item.uuid === this.state.uartServiceId
+            ));
+
+            if (uartService) {
+              uartService.characteristics()
+                .then(characteristics => {
+                  const uartCharacteristic = characteristics.find(item => (
+                    item.uuid === this.state.uartCharacteristicId
+                  ));
+
+                  if (uartCharacteristic) {
+                    this.props.setUartCharacteristic(uartCharacteristic);
+                    this.props.navigation.goBack();
+                  }
+                });
+            }
+          });
       })
       .catch(error => this.showError(error));
   };
@@ -172,7 +188,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  // TODO: Implement mapping...
+  setUartCharacteristic: characteristic => dispatch(action.setUartCharacteristic(characteristic))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(BleSettingsComponent);

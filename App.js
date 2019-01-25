@@ -16,12 +16,12 @@ import {
 import { createStore } from 'redux';
 import { Provider } from 'react-redux';
 import NavigatorComponent from './app/components/NavigatorComponent';
-import reducer from './app/reducers/index';
+import store from './app/reducers/index';
 
 export default class App extends Component {
   render() {
     return (
-      <Provider store={createStore(reducer)}>
+      <Provider store={store}>
         <NavigatorComponent />
       </Provider>
     );
