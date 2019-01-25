@@ -17,7 +17,7 @@ const RootNavigator = createStackNavigator({
   defaultNavigationOptions: {
     title: 'Revvy App',
     headerStyle: {
-      backgroundColor: '#3370a2'
+      backgroundColor: '#f90000'
     },
     headerTitleStyle: {
       color: 'white'

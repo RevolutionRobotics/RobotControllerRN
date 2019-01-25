@@ -15,9 +15,9 @@ import { name as appName } from '../../../app.json';
 
 class BleSettingsComponent extends Component {
 
-  static navigationOptions = ({navigation}) => ({
+  static navigationOptions = {
     title: 'BLE Device List'
-  });
+  };
 
   constructor() {
     super();
@@ -35,6 +35,11 @@ class BleSettingsComponent extends Component {
     } else {
       this.setStateChangeListener();
     }
+  }
+
+  componentWillUnmount() {
+    this.manager.destroy();
+    delete this.manager;
   }
 
   render() {
@@ -129,7 +134,7 @@ class BleSettingsComponent extends Component {
         }
       }
 
-      console.log(device);
+      //console.log(device);
 
       this.setState({
         foundDevices: [

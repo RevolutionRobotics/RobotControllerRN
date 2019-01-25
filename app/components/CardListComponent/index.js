@@ -15,6 +15,10 @@ const listData = [
   {
     title: 'Blockly',
     navigation: 'Blockly'
+  },
+  {
+    title: 'Robot Configurator',
+    navigation: ''
   }
 ];
 

@@ -1,10 +1,10 @@
 import { StyleSheet } from 'react-native';
 
 const defaultValues = {
+  appPrimary: '#f90000',
   appBackground: '#f5f5f5',
   cardBackground: 'white',
   shadow: {
-    borderRadius: 2,
     shadowColor: 'black',
     shadowOpacity: 0.3,
     shadowRadius: 1,
@@ -32,6 +32,7 @@ const cardListStyle = StyleSheet.create({
     backgroundColor: defaultValues.cardBackground,
     padding: 10,
     marginHorizontal: 20,
+    borderRadius: 2,
     ...defaultValues.shadow
   },
   cardLabel: {
@@ -45,7 +46,43 @@ const cardListStyle = StyleSheet.create({
 });
 
 const controllerStyle = StyleSheet.create({
-
+  container: {
+    flex: 1,
+    flexDirection: 'row'
+  },
+  joystickContainer: {
+    flex: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  joystickBase: {
+    backgroundColor: '#eeeeee',
+    alignSelf: 'center',
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  joystickHandle: {
+    backgroundColor: defaultValues.appPrimary,
+    ...defaultValues.shadow
+  },
+  btnContainer: {
+    flex: 2,
+    flexDirection: 'row',
+    justifyContent: 'center'
+  },
+  btnContainerColumn: {
+    width: 50,
+    marginHorizontal: 15,
+    justifyContent: 'center'
+  },
+  btnProgrammable: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    marginVertical: 15,
+    backgroundColor: defaultValues.appPrimary,
+    ...defaultValues.shadow
+  }
 });
 
 const blocklyStyle = StyleSheet.create({
@@ -93,6 +130,7 @@ const bleStyle = StyleSheet.create({
     backgroundColor: defaultValues.cardBackground,
     marginTop: 20,
     marginHorizontal: 20,
+    borderRadius: 2,
     ...defaultValues.shadow
   },
   deviceItemTitle: {

@@ -6,6 +6,10 @@ import { blocklyStyle as styles } from '../styles';
 
 class BlocklyComponent extends Component {
 
+  static navigationOptions = {
+    title: 'Blockly Editor'
+  };
+
   constructor(props) {
     super(props);
 
