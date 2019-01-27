@@ -1,0 +1,27 @@
+html, 
+body, 
+#blockly-div {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+#toolbox {
+  display: none;
+}
+
+.blocklySvg .blocklyScrollbarHorizontal .blocklyScrollbarHandle {
+  height: 5px;
+  y: 20px;
+}
+
+.blocklySvg .blocklyScrollbarVertical .blocklyScrollbarHandle {
+  width: 5px;
+  x: 20px;
+}
+
+.blocklySvg .blocklyScrollbarHorizontal .blocklyScrollbarHandle,
+.blocklySvg .blocklyScrollbarVertical .blocklyScrollbarHandle {
+  rx: 2.5px;
+  ry: 2.5px;
+}
