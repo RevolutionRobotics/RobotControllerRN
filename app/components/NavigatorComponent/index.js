@@ -6,12 +6,14 @@ import CardListComponent from 'components/CardListComponent';
 import BleSettingsComponent from 'components/BleSettingsComponent';
 import ControllerComponent from 'components/ControllerComponent';
 import BlocklyComponent from 'components/BlocklyComponent';
+import CodeViewComponent from 'components/CodeViewComponent';
 
 const RootNavigator = createStackNavigator({
   CardList: { screen: CardListComponent },
   BleSettings: { screen: BleSettingsComponent },
   Controller: { screen: ControllerComponent },
-  Blockly: { screen: BlocklyComponent }
+  Blockly: { screen: BlocklyComponent },
+  CodeView: { screen: CodeViewComponent }
 }, {
   initialRouteName: 'CardList',
   defaultNavigationOptions: {

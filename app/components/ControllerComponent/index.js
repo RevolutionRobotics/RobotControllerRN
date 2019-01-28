@@ -61,7 +61,7 @@ class ControllerComponent extends Component {
   componentDidMount() {
     if (this.props.uartCharacteristic) {
       this.setState({
-        sendTimer: setInterval(() => this.sendData(), 100)
+        sendTimer: setInterval(this.sendData, 100)
       });
     }
   }
@@ -86,7 +86,7 @@ class ControllerComponent extends Component {
     ]);
 
     this.setState({
-      counter: (this.state.counter >= 0x0f) ? 0 : this.state.counter + 1
+      counter: (this.state.counter >= 0xf) ? 0 : this.state.counter + 1
     });
 
     try {

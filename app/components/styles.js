@@ -4,6 +4,11 @@ const defaultValues = {
   appPrimary: '#f90000',
   appBackground: '#f5f5f5',
   cardBackground: 'white',
+  headerButton: {
+    color: 'white',
+    fontSize: 16,
+    marginHorizontal: 20
+  },
   shadow: {
     shadowColor: 'black',
     shadowOpacity: 0.3,
@@ -38,11 +43,7 @@ const cardListStyle = StyleSheet.create({
   cardLabel: {
     textAlign: 'center'
   },
-  btnConnect: {
-    color: 'white',
-    fontSize: 16,
-    marginHorizontal: 20
-  }
+  btnConnect: defaultValues.headerButton
 });
 
 const controllerStyle = StyleSheet.create({
@@ -100,7 +101,8 @@ const blocklyStyle = StyleSheet.create({
     width: '100%',
     flex: 1,
     flexDirection: 'column'
-  }
+  },
+  btnCode: defaultValues.headerButton
 });
 
 const bleStyle = StyleSheet.create({

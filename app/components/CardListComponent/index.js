@@ -27,7 +27,7 @@ export default class CardListComponent extends Component {
   static navigationOptions = ({navigation}) => ({
     headerRight: (
       <TouchableOpacity
-        onPress={() => navigation.navigate('BleSettings', {})}
+        onPress={() => navigation.navigate('BleSettings')}
       >
         <Text style={styles.btnConnect}>Connect</Text>
       </TouchableOpacity>
@@ -38,7 +38,7 @@ export default class CardListComponent extends Component {
     return (
       <TouchableOpacity
         style={styles.card}
-        onPress={() => this.props.navigation.navigate(item.navigation, {})}
+        onPress={() => this.props.navigation.navigate(item.navigation)}
       >
         <Text style={styles.cardLabel}>{item.title}</Text>
       </TouchableOpacity>
