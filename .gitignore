@@ -25,7 +25,8 @@ project.xcworkspace
 # Android/IntelliJ
 #
 build/
-*/app/src/main/assets/blockly/*
+**/app/src/main/assets/blockly/*
+**/app/src/main/assets/blockly/*/
 .idea
 .gradle
 local.properties

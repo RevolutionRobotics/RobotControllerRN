@@ -15,8 +15,8 @@ import {
 } from 'react-native';
 import { createStore } from 'redux';
 import { Provider } from 'react-redux';
-import NavigatorComponent from './app/components/NavigatorComponent';
-import store from './app/reducers/index';
+import NavigatorComponent from 'components/NavigatorComponent';
+import store from 'reducers/index';
 
 export default class App extends Component {
   render() {

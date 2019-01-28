@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import { StatusBar, View } from 'react-native';
 import { createStackNavigator, createAppContainer } from 'react-navigation';
 
-import CardListComponent from '../CardListComponent';
-import BleSettingsComponent from '../BleSettingsComponent';
-import ControllerComponent from '../ControllerComponent';
-import BlocklyComponent from '../BlocklyComponent';
+import CardListComponent from 'components/CardListComponent';
+import BleSettingsComponent from 'components/BleSettingsComponent';
+import ControllerComponent from 'components/ControllerComponent';
+import BlocklyComponent from 'components/BlocklyComponent';
 
 const RootNavigator = createStackNavigator({
   CardList: { screen: CardListComponent },

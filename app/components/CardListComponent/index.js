@@ -5,7 +5,7 @@ import {
   Text 
 } from 'react-native';
 import { SafeAreaView } from 'react-navigation';
-import { cardListStyle as styles } from '../styles';
+import { cardListStyle as styles } from 'components/styles';
 
 const listData = [
   {
@@ -13,7 +13,7 @@ const listData = [
     navigation: 'Controller'
   },
   {
-    title: 'Blockly',
+    title: 'Blockly Editor',
     navigation: 'Blockly'
   },
   {

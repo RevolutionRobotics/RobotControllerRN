@@ -10,9 +10,9 @@ import {
 import { SafeAreaView } from 'react-navigation';
 import { connect } from 'react-redux';
 import { BleManager } from 'react-native-ble-plx';
-import { bleStyle as styles } from '../styles';
-import { name as appName } from '../../../app.json';
-import * as action from '../../actions/BleAction';
+import { bleStyle as styles } from 'components/styles';
+import { name as appName } from 'app.json';
+import * as action from 'actions/BleAction';
 
 class BleSettingsComponent extends Component {
 

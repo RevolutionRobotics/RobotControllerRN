@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Platform, SafeAreaView, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { connect } from 'react-redux';
-import { blocklyStyle as styles } from '../styles';
+import { blocklyStyle as styles } from 'components/styles';
 
 class BlocklyComponent extends Component {
 

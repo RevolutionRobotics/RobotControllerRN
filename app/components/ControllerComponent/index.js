@@ -6,8 +6,9 @@ import {
   Text,
   PanResponder
 } from 'react-native';
+import base64 from 'base64-js';
 import { connect } from 'react-redux';
-import { controllerStyle as styles } from '../styles';
+import { controllerStyle as styles } from 'components/styles';
 
 class ControllerComponent extends Component {
 
@@ -20,6 +21,8 @@ class ControllerComponent extends Component {
 
     this.joystickSize = 180;
     this.state = {
+      counter: 0,
+      sendTimer: null,
       joystickX: 0,
       joystickY: 0,
       joystickR: 0,
@@ -55,9 +58,50 @@ class ControllerComponent extends Component {
     };
   }
 
+  componentDidMount() {
+    if (this.props.uartCharacteristic) {
+      this.setState({
+        sendTimer: setInterval(() => this.sendData(), 100)
+      });
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.state.sendTimer) {
+      clearInterval(this.state.sendTimer);
+    }
+  }
+
   radToDeg = rad => (rad / Math.PI * 180);
 
   offsetPercent = offset => Math.round(offset / (this.joystickSize / 2) * 100);
+
+  sendData = async () => {
+    const byteArray = new Uint8Array([
+      0xff,
+      this.offsetPercent(this.state.joystickR),
+      this.state.joystickPhi,
+      0x0,
+      this.state.counter
+    ]);
+
+    this.setState({
+      counter: (this.state.counter >= 0x0f) ? 0 : this.state.counter + 1
+    });
+
+    try {
+      const base64Data = base64.fromByteArray(byteArray);
+      
+      this.props.uartCharacteristic.writeWithResponse(base64Data)
+        .then()
+        .catch(e => {
+          clearInterval(this.state.sendTimer);
+          console.warn(e.message);
+        });
+    } catch (e) {
+      console.warn(e.message);
+    }
+  };
 
   renderButtons = () => (
     <View style={styles.btnContainer}>
