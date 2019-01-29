@@ -7,6 +7,13 @@ import {
 import { SafeAreaView } from 'react-navigation';
 import { cardListStyle as styles } from 'components/styles';
 
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import HeaderButtons, { HeaderButton, Item } from 'react-navigation-header-buttons';
+
+const MaterialHeaderButton = props => (
+  <HeaderButton {...props} IconComponent={MaterialIcons} iconSize={23} color="white" />
+);
+
 const listData = [
   {
     title: 'Remote Controller',
@@ -26,11 +33,13 @@ export default class CardListComponent extends Component {
 
   static navigationOptions = ({navigation}) => ({
     headerRight: (
-      <TouchableOpacity
-        onPress={() => navigation.navigate('BleSettings')}
-      >
-        <Text style={styles.btnConnect}>Connect</Text>
-      </TouchableOpacity>
+      <HeaderButtons HeaderButtonComponent={MaterialHeaderButton}>
+        <Item 
+          title="connect" 
+          iconName="bluetooth" 
+          onPress={() => navigation.navigate('BleSettings')} 
+        />
+      </HeaderButtons>
     )
   });
 
@@ -43,7 +52,7 @@ export default class CardListComponent extends Component {
         <Text style={styles.cardLabel}>{item.title}</Text>
       </TouchableOpacity>
     );
-  }
+  };
 
   render() {
     return (

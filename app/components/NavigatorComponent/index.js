@@ -43,7 +43,7 @@ export default class NavigatorComponent extends Component {
     return (
       <View style={{ flex: 1 }}>
         <StatusBar 
-          backgroundColor={'#234d70'}
+          backgroundColor={'#f90000'}
           barStyle={'light-content'}
           translucent={false}
           hidden={true}

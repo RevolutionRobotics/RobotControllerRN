@@ -10,32 +10,38 @@ import {
 import { WebView } from 'react-native-webview';
 import { connect } from 'react-redux';
 import { blocklyStyle as styles } from 'components/styles';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import HeaderButtons, { HeaderButton, Item } from 'react-navigation-header-buttons';
+
+const MaterialHeaderButton = props => (
+  <HeaderButton {...props} IconComponent={MaterialIcons} iconSize={23} color="white" />
+);
 
 class BlocklyComponent extends Component {
 
-  static navigationOptions = ({ navigation }) => ({
-    title: 'Blockly Editor',
-    headerRight: (
-      <TouchableOpacity
-        onPress={() => {
-          const code = navigation.getParam('code');
-          
-          if (!code) {
-            Alert.alert(
-              'Nothing to show',
-              'Please add some blocks to view your code.',
-              [{ text: 'OK', onPress: null }],
-              { cancelable: false }
-            );
-          } else {
-            navigation.push('CodeView', { code: code });
-          }
-        }}
-      >
-        <Text style={styles.btnCode}>{'</>'}</Text>
-      </TouchableOpacity>
-    )
-  });
+  static navigationOptions = ({ navigation }) => {
+    const menuIconType = (Platform.OS === 'android') ? 'vert' : 'horiz';
+
+    return {
+      title: 'Blockly Editor',
+      headerRight: (
+        <HeaderButtons 
+          HeaderButtonComponent={MaterialHeaderButton}
+          OverflowIcon={<MaterialIcons name={`more-${menuIconType}`} size={23} color='white' />}
+        >
+          <Item 
+            title="code" 
+            iconName="code" 
+            onPress={navigation.getParam('codeViewHandler')} 
+          />
+          <Item title="New" show="never" onPress={() => {}} />
+          <Item title="Open" show="never" onPress={() => {}} />
+          <Item title="Save" show="never" onPress={() => {}} />
+          <Item title="Delete" show="never" onPress={() => {}} />
+        </HeaderButtons>
+      )
+    };
+  };
 
   constructor(props) {
     super(props);
@@ -46,6 +52,12 @@ class BlocklyComponent extends Component {
     };
   }
 
+  componentDidMount() {
+    this.props.navigation.setParams({
+      codeViewHandler: this.codeViewPressed
+    });
+  }
+
   onWebViewMessage = event => {
     const data = JSON.parse(event.nativeEvent.data);
 
@@ -53,10 +65,21 @@ class BlocklyComponent extends Component {
       xmlData: data.xmlData,
       pythonCode: data.pythonCode
     });
+  };
 
-    this.props.navigation.setParams({
-      code: data.pythonCode
-    })
+  codeViewPressed = () => {
+    const code = this.state.pythonCode;
+    
+    if (!code) {
+      Alert.alert(
+        'Nothing to show',
+        'Please add some blocks to view your code.',
+        [{ text: 'OK', onPress: null }],
+        { cancelable: false }
+      );
+    } else {
+      this.props.navigation.push('CodeView', { code: code });
+    }
   };
 
   render() {
