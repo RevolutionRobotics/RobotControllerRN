@@ -105,6 +105,13 @@ const blocklyStyle = StyleSheet.create({
   btnCode: defaultValues.headerButton
 });
 
+const codeViewStyle = StyleSheet.create({
+  container: {
+    flex: 1, 
+    backgroundColor: '#f5f2f0'
+  }
+});
+
 const bleStyle = StyleSheet.create({
   container: {
     flex: 1, 
@@ -144,5 +151,6 @@ export {
   cardListStyle,
   controllerStyle,
   blocklyStyle,
+  codeViewStyle,
   bleStyle
 }
