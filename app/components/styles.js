@@ -18,6 +18,23 @@ const defaultValues = {
       width: 0.3,
     },
     elevation: 3
+  },
+  androidDialog: {
+    marginLeft: 20,
+    marginRight: 20
+  },
+  iosDialog: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'white',
+    opacity: 0.9
+  },
+  dialogContainer: {
+    alignItems: 'center',
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 4
   }
 };
 
@@ -102,7 +119,75 @@ const blocklyStyle = StyleSheet.create({
     flex: 1,
     flexDirection: 'column'
   },
-  btnCode: defaultValues.headerButton
+  btnCode: defaultValues.headerButton,
+  androidDialog: defaultValues.androidDialog,
+  iosDialog: defaultValues.iosDialog,
+  textInput: {
+    borderStyle: 'solid',
+    borderRadius: 4,
+    borderColor: '#444444',
+    borderWidth: 1,
+    marginVertical: 10,
+    paddingVertical: 10,
+    paddingLeft: 15,
+    paddingRight: 15
+  },
+  dialogBackdrop: { 
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)' 
+  },
+  saveDialogContainer: { 
+    width: 300,
+    height: 200,
+    ...defaultValues.dialogContainer
+  },
+  openDialogContainer: {
+    width: 300,
+    height: 300,
+    ...defaultValues.dialogContainer
+  },
+  openDialogListContainer: { 
+    width: '100%', 
+    height: 180, 
+    flexDirection: 'row', 
+    alignItems: 'center',
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#cacaca'
+  },
+  openDialogItem: {
+    padding: 15
+  },
+  dialogTitle: {
+    fontSize: 20,
+    marginBottom: 15
+  },
+  dialogInput: {
+    width: '100%',
+    borderStyle: 'solid',
+    borderRadius: 4,
+    borderColor: '#444444',
+    borderWidth: 1,
+    marginVertical: 10,
+    paddingTop: 10,
+    paddingBottom: 10,
+    paddingLeft: 15,
+    paddingRight: 15
+  },
+  dialogButtonContainer: {
+    flex: 1, 
+    flexDirection: 'row', 
+    alignSelf: 'flex-end', 
+    alignItems: 'flex-end'
+  },
+  dialogButton: {
+    paddingHorizontal: 10
+  },
+  dialogButtonLabel: {
+    fontSize: 18
+  }
 });
 
 const codeViewStyle = StyleSheet.create({

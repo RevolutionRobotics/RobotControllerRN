@@ -1,12 +1,15 @@
 import React, { Component } from 'react';
-import { StatusBar, View } from 'react-native';
+import { AsyncStorage, StatusBar, View } from 'react-native';
 import { createStackNavigator, createAppContainer } from 'react-navigation';
+import { connect } from 'react-redux';
 
 import CardListComponent from 'components/CardListComponent';
 import BleSettingsComponent from 'components/BleSettingsComponent';
 import ControllerComponent from 'components/ControllerComponent';
 import BlocklyComponent from 'components/BlocklyComponent';
 import CodeViewComponent from 'components/CodeViewComponent';
+
+import * as action from 'actions/BlocklyAction';
 
 const RootNavigator = createStackNavigator({
   CardList: { screen: CardListComponent },
@@ -33,10 +36,17 @@ const RootNavigator = createStackNavigator({
 
 const AppContainer = createAppContainer(RootNavigator);
 
-export default class NavigatorComponent extends Component {
+class NavigatorComponent extends Component {
 
   constructor(props) {
     super(props);
+
+    AsyncStorage.getItem('savedList')
+      .then(list => {
+        if (list) {
+          props.setBlocklyList(JSON.parse(list));
+        }
+      });
   }
 
   render() {
@@ -53,3 +63,13 @@ export default class NavigatorComponent extends Component {
     );
   }
 }
+
+const mapStateToProps = state => ({
+  // TODO: Implement mapping...
+});
+
+const mapDispatchToProps = dispatch => ({
+  setBlocklyList: list => dispatch(action.setBlocklyList(list))
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(NavigatorComponent);

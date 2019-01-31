@@ -122,11 +122,11 @@
     </xml>
 
     <script>
-      var generateOutput = function(workspace) {
+      var generateOutput = function() {
         var xmlDom = Blockly.Xml.workspaceToDom(workspace);
 
         return {
-          xmlData: Blockly.Xml.domToPrettyText(xmlDom),
+          xmlData: Blockly.Xml.domToText(xmlDom),
           pythonCode: Blockly.Python.workspaceToCode(workspace)
         };
       };
@@ -140,8 +140,17 @@
 
       workspace.addChangeListener(function(event) {
         if (event.type !== Blockly.Events.UI) {
-          const output = JSON.stringify(generateOutput(workspace));
+          var output = JSON.stringify(generateOutput());
           window.postMessage(output, '*', false);
+        }
+      });
+
+      document.addEventListener('message', function(message) {
+        Blockly.mainWorkspace.clear();
+
+        if (message.data) {
+          var dom = Blockly.Xml.textToDom(message.data);
+          Blockly.Xml.domToWorkspace(dom, workspace);
         }
       });
     </script>

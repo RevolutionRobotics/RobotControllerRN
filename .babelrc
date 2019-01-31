@@ -6,7 +6,8 @@
       "alias": {
         "components": "./app/components",
         "actions": "./app/actions",
-        "reducers": "./app/reducers"
+        "reducers": "./app/reducers",
+        "utilities": "./app/utilities"
       }
     }]
   ]
