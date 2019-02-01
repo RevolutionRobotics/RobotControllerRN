@@ -3,6 +3,7 @@ import {
   Platform, 
   SafeAreaView, 
   TouchableOpacity,
+  KeyboardAvoidingView,
   View,
   Text,
   TextInput,
@@ -195,23 +196,28 @@ class BlocklyComponent extends Component {
       supportedOrientations={['portrait', 'landscape']}
     >
       <View style={styles.dialogBackdrop}>
-        <View style={styles.saveDialogContainer}>
-          <Text style={styles.dialogTitle}>Save code as...</Text>
-          <TextInput 
-            style={styles.dialogInput} 
-            placeholder={'Script name...'}
-            onChangeText={value => this.setState({ saveInputValue: value })}
-            value={this.state.saveInputValue}
-          ></TextInput>
-          <View style={styles.dialogButtonContainer}>
-            <TouchableOpacity style={styles.dialogButton} onPress={this.saveScript}>
-              <Text style={styles.dialogButtonLabel}>Save</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.dialogButton} onPress={this.closeSaveDialog}>
-              <Text style={styles.dialogButtonLabel}>Cancel</Text>
-            </TouchableOpacity>
+        <KeyboardAvoidingView
+          keyboardVerticalOffset={-25}
+          behavior='position'
+        >
+          <View style={styles.saveDialogContainer}>
+            <Text style={styles.dialogTitle}>Save code as...</Text>
+              <TextInput 
+                style={styles.dialogInput} 
+                placeholder={'Script name...'}
+                onChangeText={value => this.setState({ saveInputValue: value })}
+                value={this.state.saveInputValue}
+              ></TextInput>
+            <View style={styles.dialogButtonContainer}>
+              <TouchableOpacity style={styles.dialogButton} onPress={this.saveScript}>
+                <Text style={styles.dialogButtonLabel}>Save</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.dialogButton} onPress={this.closeSaveDialog}>
+                <Text style={styles.dialogButtonLabel}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
+        </KeyboardAvoidingView>
       </View>
     </Modal>
   );
