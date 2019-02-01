@@ -131,7 +131,7 @@ class BleSettingsComponent extends Component {
           element.id === device.id
         ));
 
-        if (deviceInList) {
+        if (deviceInList || !device.serviceUUIDs?.includes(this.state.uartServiceId)) {
           return;
         }
       }
