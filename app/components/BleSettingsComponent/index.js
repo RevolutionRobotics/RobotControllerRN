@@ -2,14 +2,16 @@ import React, { Component } from 'react';
 import { 
   Platform, 
   PermissionsAndroid,
-  Alert,  
+  Alert,
+  View,
   Text,
   FlatList,
-  TouchableOpacity
+  Modal,
+  TouchableOpacity,
+  ActivityIndicator
 } from 'react-native';
 import { SafeAreaView } from 'react-navigation';
 import { connect } from 'react-redux';
-import { BleManager } from 'react-native-ble-plx';
 import { bleStyle as styles } from 'components/styles';
 import { name as appName } from 'app.json';
 import * as action from 'actions/BleAction';
@@ -22,9 +24,11 @@ class BleSettingsComponent extends Component {
 
   constructor(props) {
     super(props);
-    this.manager = new BleManager();
+    this.manager = props.navigation.state.params.bleManager;
 
     this.state = {
+      device: null,
+      connectingDialogVisible: false,
       uartServiceId: '0000ffe0-0000-1000-8000-00805f9b34fb',
       uartCharacteristicId: '0000ffe1-0000-1000-8000-00805f9b34fb',
       foundDevices: [],
@@ -48,9 +52,44 @@ class BleSettingsComponent extends Component {
     return (
       <SafeAreaView style={styles.container}>
         {this.renderListOrEmpty()}
+        {this.renderConnectingDialog()}
       </SafeAreaView>
     );
   }
+
+  renderConnectingDialog = () => {
+    const currentDevice = this.state.device;
+    const currentDeviceName = currentDevice?.localName || currentDevice?.name || currentDevice?.id;
+
+    return (
+      <Modal
+        animationType='fade'
+        transparent={true}
+        visible={this.state.connectingDialogVisible}
+        onRequestClose={() => this.setState({ connectingDialogVisible: false })}
+        supportedOrientations={['portrait', 'landscape']}
+      >
+        <View style={styles.dialogBackdrop}>
+          <View style={styles.connectingDialogContainer}>
+            <Text style={styles.dialogTitle}>
+              {`Connecting to ${currentDeviceName || 'BLE device'}...`}
+            </Text>
+            <View style={styles.connectingIndicatorContainer}>
+              <ActivityIndicator size="large" color="#f90000" />
+            </View>
+            <View style={styles.dialogButtonContainer}>
+              <TouchableOpacity style={styles.dialogButton} onPress={() => {
+                this.state.device?.cancelConnection();
+                this.setState({ connectingDialogVisible: false });
+              }}>
+                <Text style={styles.dialogButtonLabel}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    );
+  };
 
   renderListOrEmpty = () => {
     return this.state.foundDevices.length === 0 ?
@@ -149,6 +188,11 @@ class BleSettingsComponent extends Component {
     // Stop scanning as it's not necessary if you are scanning for one device.
     this.manager.stopDeviceScan();
 
+    this.setState({
+      device: device,
+      connectingDialogVisible: true
+    });
+
     // Proceed with connection.
     device.connect()
       .then(device => {
@@ -173,18 +217,24 @@ class BleSettingsComponent extends Component {
 
                   if (uartCharacteristic) {
                     this.props.setUartCharacteristic(uartCharacteristic);
-                    this.props.navigation.goBack();
+
+                    this.setState({ 
+                      connectingDialogVisible: false 
+                    }, this.props.navigation.goBack);
                   }
                 });
             }
           });
       })
-      .catch(error => this.showError(error));
+      .catch(error => {
+        this.setState({ connectingDialogVisible: false });
+        this.showError(error)
+      });
   };
 }
 
 const mapStateToProps = state => ({
-  // TODO: Implement mapping...
+  uartCharacteristic: state.BleReducer.get('uartCharacteristic')
 });
 
 const mapDispatchToProps = dispatch => ({

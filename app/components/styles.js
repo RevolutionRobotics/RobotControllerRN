@@ -35,6 +35,28 @@ const defaultValues = {
     backgroundColor: 'white',
     padding: 20,
     borderRadius: 4
+  },
+  dialogBackdrop: { 
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)' 
+  },
+  dialogTitle: {
+    fontSize: 20,
+    marginBottom: 15
+  },
+  dialogButtonContainer: {
+    flex: 1, 
+    flexDirection: 'row', 
+    alignSelf: 'flex-end', 
+    alignItems: 'flex-end'
+  },
+  dialogButton: {
+    paddingHorizontal: 10
+  },
+  dialogButtonLabel: {
+    fontSize: 18
   }
 };
 
@@ -132,12 +154,7 @@ const blocklyStyle = StyleSheet.create({
     paddingLeft: 15,
     paddingRight: 15
   },
-  dialogBackdrop: { 
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)' 
-  },
+  dialogBackdrop: defaultValues.dialogBackdrop,
   saveDialogContainer: { 
     width: 300,
     height: 200,
@@ -160,10 +177,7 @@ const blocklyStyle = StyleSheet.create({
   openDialogItem: {
     padding: 15
   },
-  dialogTitle: {
-    fontSize: 20,
-    marginBottom: 15
-  },
+  dialogTitle: defaultValues.dialogTitle,
   dialogInput: {
     width: '100%',
     borderStyle: 'solid',
@@ -176,18 +190,9 @@ const blocklyStyle = StyleSheet.create({
     paddingLeft: 15,
     paddingRight: 15
   },
-  dialogButtonContainer: {
-    flex: 1, 
-    flexDirection: 'row', 
-    alignSelf: 'flex-end', 
-    alignItems: 'flex-end'
-  },
-  dialogButton: {
-    paddingHorizontal: 10
-  },
-  dialogButtonLabel: {
-    fontSize: 18
-  }
+  dialogButtonContainer: defaultValues.dialogButtonContainer,
+  dialogButton: defaultValues.dialogButton,
+  dialogButtonLabel: defaultValues.dialogButtonLabel
 });
 
 const codeViewStyle = StyleSheet.create({
@@ -229,7 +234,26 @@ const bleStyle = StyleSheet.create({
   },
   deviceItemTitle: {
     padding: 20
-  }
+  },
+  dialogBackdrop: defaultValues.dialogBackdrop,
+  connectingDialogContainer: { 
+    width: 300,
+    ...defaultValues.dialogContainer
+  },
+  dialogTitle: defaultValues.dialogTitle,
+  connectingIndicatorContainer: { 
+    width: '100%', 
+    margin: 20, 
+    height: 50 
+  },
+  dialogButtonContainer: {
+    height: 20, 
+    flexDirection: 'column', 
+    alignSelf: 'flex-end', 
+    alignItems: 'flex-end'
+  },
+  dialogButton: defaultValues.dialogButton,
+  dialogButtonLabel: defaultValues.dialogButtonLabel
 });
 
 export {
