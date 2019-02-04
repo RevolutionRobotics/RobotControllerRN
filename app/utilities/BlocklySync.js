@@ -4,10 +4,7 @@ export default class BlocklySync {
 
   static sync = (props) => {
     const uartCharacteristic = props.uartCharacteristic;
-    const savedList = props.savedList.map(item => ({
-      name: item.name,
-      code: item.pythonCode || ''
-    }));
+    const savedList = props.savedList.map(item => (item.pythonCode || ''));
 
     const encoded = encodeURIComponent(JSON.stringify(savedList));
     const listByteArray = encoded.split('').map(c => c.charCodeAt());
