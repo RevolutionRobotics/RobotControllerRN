@@ -7,7 +7,8 @@
         "components": "./app/components",
         "actions": "./app/actions",
         "reducers": "./app/reducers",
-        "utilities": "./app/utilities"
+        "utilities": "./app/utilities",
+        "images": './assets/images'
       }
     }]
   ]

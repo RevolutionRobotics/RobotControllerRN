@@ -122,6 +122,15 @@ const controllerStyle = StyleSheet.create({
     marginVertical: 15,
     backgroundColor: defaultValues.appPrimary,
     ...defaultValues.shadow
+  },
+  centerImageContainer: {
+    flex: 1,
+    alignItems: 'center'
+  },
+  centerImage: {
+    width: 120,
+    bottom: 60,
+    marginHorizontal: 10
   }
 });
 

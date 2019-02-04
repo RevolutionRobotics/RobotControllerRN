@@ -3,7 +3,7 @@ import {
   TouchableOpacity,
   SafeAreaView,
   View,
-  Text,
+  Image,
   PanResponder
 } from 'react-native';
 import base64 from 'base64-js';
@@ -148,15 +148,12 @@ class ControllerComponent extends Component {
     return (
       <SafeAreaView style={styles.container}>
         {this.renderJoystick()}
-        <View style={{
-          flex: 1,
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: '#eeeeee'
-        }}>
-          <Text style={{ width: 45 }}>
-            {`r: ${this.offsetPercent(this.state.joystickR)}, \n𝜑: ${this.state.joystickPhi}`}
-          </Text>
+        <View style={styles.centerImageContainer}>
+          <Image 
+            style={styles.centerImage} 
+            resizeMode='contain'
+            source={require('images/rrf-tall-full-color.png')}
+          />
         </View>
 
         {this.renderButtons()}
