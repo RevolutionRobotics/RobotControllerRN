@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-navigation';
 import { connect } from 'react-redux';
+import BlocklySync from 'utilities/BlocklySync';
 import { bleStyle as styles } from 'components/styles';
 import { name as appName } from 'app.json';
 import * as action from 'actions/BleAction';
@@ -220,7 +221,10 @@ class BleSettingsComponent extends Component {
 
                     this.setState({ 
                       connectingDialogVisible: false 
-                    }, this.props.navigation.goBack);
+                    }, () => {
+                      BlocklySync.sync(this.props);
+                      this.props.navigation.goBack();
+                    });
                   }
                 });
             }
@@ -234,7 +238,8 @@ class BleSettingsComponent extends Component {
 }
 
 const mapStateToProps = state => ({
-  uartCharacteristic: state.BleReducer.get('uartCharacteristic')
+  uartCharacteristic: state.BleReducer.get('uartCharacteristic'),
+  savedList: state.BlocklyReducer.get('savedList')
 });
 
 const mapDispatchToProps = dispatch => ({
