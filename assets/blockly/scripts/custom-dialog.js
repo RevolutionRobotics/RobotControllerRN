@@ -29,7 +29,7 @@ Blockly.confirm = function(message, callback) {
     if (callback) {
       callback(!!result.value);
     }
-  })
+  });
 };
 
 /** Override Blockly.prompt() with custom implementation. */
@@ -43,6 +43,21 @@ Blockly.prompt = function(message, defaultValue, callback) {
   }).then(function(input) {
     if (input.value && callback) {
       callback(input.value);
+    }
+  });
+
+  var input = $('.swal2-input');
+  var container = $('.swal2-popup');
+
+  input.focus(function() {
+    if (!container.hasClass('focused')) {
+      container.addClass('focused');
+    }
+  });
+
+  input.blur(function() {
+    if (container.hasClass('focused')) {
+      container.removeClass('focused');
     }
   });
 };
