@@ -4,7 +4,8 @@ Blockly.alert = function(message, callback) {
     title: message,
     text: '',
     type: 'info',
-    heightAuto: false
+    heightAuto: false,
+    allowOutsideClick: false
   }).then(function() {
     if (callback) {
       callback();
@@ -19,6 +20,7 @@ Blockly.confirm = function(message, callback) {
     text: '',
     type: 'question',
     showCancelButton: true,
+    allowOutsideClick: false,
     heightAuto: false,
     confirmButtonColor: '#3085d6',
     cancelButtonColor: '#aaa',
@@ -36,6 +38,7 @@ Blockly.prompt = function(message, defaultValue, callback) {
     title: message,
     input: 'text',
     showCancelButton: true,
+    allowOutsideClick: false,
     heightAuto: false
   }).then(function(input) {
     if (input.value && callback) {

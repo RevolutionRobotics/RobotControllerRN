@@ -14,18 +14,18 @@ body,
   display: none;
 }
 
-.blocklySvg .blocklyScrollbarHorizontal .blocklyScrollbarHandle {
+#blockly-div .injectionDiv .blocklyScrollbarHorizontal .blocklyScrollbarHandle {
   height: 5px;
   y: 20px;
 }
 
-.blocklySvg .blocklyScrollbarVertical .blocklyScrollbarHandle {
+#blockly-div .injectionDiv .blocklyScrollbarVertical .blocklyScrollbarHandle {
   width: 5px;
   x: 20px;
 }
 
-.blocklySvg .blocklyScrollbarHorizontal .blocklyScrollbarHandle,
-.blocklySvg .blocklyScrollbarVertical .blocklyScrollbarHandle {
+#blockly-div .injectionDiv .blocklyScrollbarHorizontal .blocklyScrollbarHandle,
+#blockly-div .injectionDiv .blocklyScrollbarVertical .blocklyScrollbarHandle {
   rx: 2.5px;
   ry: 2.5px;
 }
