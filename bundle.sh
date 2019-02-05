@@ -1,12 +1,6 @@
 #!/bin/sh
 
-rsync -av --delete \
-  --exclude='scripts/package.json' \
-  --exclude='scripts/appengine' \
-  --exclude='scripts/demos' \
-  --exclude='scripts/tests' \
-    ./assets/blockly/ ./android/app/src/main/assets/blockly/
-
+rsync -av --delete ./assets/blockly/ ./android/app/src/main/assets/blockly/
 react-native bundle \
   --platform android \
   --dev false \

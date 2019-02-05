@@ -2,12 +2,13 @@
 <html>
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
-    <script src="./scripts/blockly_compressed.js"></script>
-    <script src="./scripts/blocks_compressed.js"></script>
-    <script src="./scripts/python_compressed.js"></script>
-    <script src="./scripts/msg/js/en.js"></script>
+    <script src="./scripts/blockly/blockly_compressed.js"></script>
+    <script src="./scripts/blockly/blocks_compressed.js"></script>
+    <script src="./scripts/blockly/python_compressed.js"></script>
+    <script src="./scripts/blockly/msg/js/en.js"></script>
     
     <link rel="stylesheet" type="text/css" href="./styles/style.css">
+    <link rel="stylesheet" type="text/css" href="./styles/sweetalert2.min.css">
   </head>
   <body>
     <div id="blockly-div"></div>
@@ -121,38 +122,8 @@
       </category>
     </xml>
 
-    <script>
-      var generateOutput = function() {
-        var xmlDom = Blockly.Xml.workspaceToDom(workspace);
-
-        return {
-          xmlData: Blockly.Xml.domToText(xmlDom),
-          pythonCode: Blockly.Python.workspaceToCode(workspace)
-        };
-      };
-
-      var workspace = Blockly.inject('blockly-div', {
-        toolbox: document.getElementById('toolbox'),
-        css: true,
-        horizontalLayout: false,
-        oneBasedIndex: false
-      });
-
-      workspace.addChangeListener(function(event) {
-        if (event.type !== Blockly.Events.UI) {
-          var output = JSON.stringify(generateOutput());
-          window.postMessage(output, '*', false);
-        }
-      });
-
-      document.addEventListener('message', function(message) {
-        Blockly.mainWorkspace.clear();
-
-        if (message.data) {
-          var dom = Blockly.Xml.textToDom(message.data);
-          Blockly.Xml.domToWorkspace(dom, workspace);
-        }
-      });
-    </script>
+    <script src="./scripts/main.js"></script>
+    <script src="./scripts/sweetalert2.min.js"></script>
+    <script src="./scripts/custom-dialog.js"></script>
   </body>
 </html>
