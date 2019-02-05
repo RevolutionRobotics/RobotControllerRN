@@ -9,6 +9,8 @@ export default class CodeViewComponent extends Component {
     return (
       <SafeAreaView style={styles.container}>
         <SyntaxHighlighter
+          customStyle={styles.highlighter}
+          contentContainerStyle={styles.highlighterContent}
           language='python'
           highlighter={ 'prism' || 'hljs' }
         >

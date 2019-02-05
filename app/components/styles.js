@@ -208,6 +208,12 @@ const codeViewStyle = StyleSheet.create({
   container: {
     flex: 1, 
     backgroundColor: '#f5f2f0'
+  },
+  highlighter: {
+    padding: 10
+  },
+  highlighterContent: {
+    flex: 1
   }
 });
 
