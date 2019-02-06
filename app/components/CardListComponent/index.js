@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import {  
   FlatList, 
   TouchableOpacity, 
-  Text 
+  Text,
+  Alert
 } from 'react-native';
 import { connect } from 'react-redux';
 import { BleManager } from 'react-native-ble-plx';
@@ -41,13 +42,16 @@ class CardListComponent extends Component {
           iconName={navigation.getParam('bleIcon') || 'bluetooth'} 
           onPress={() => {
             const bleManager = navigation.getParam('bleManager');
+
             if (bleManager.state !== 'PoweredOn') {
               bleManager.enable();
-            }
+            } 
 
-            navigation.navigate('BleSettings', {
-              bleManager: bleManager
-            });
+            if (!navigation.getParam('isConnected')()) {
+              navigation.navigate('BleSettings', {
+                bleManager: bleManager
+              });
+            }
           }} 
         />
       </HeaderButtons>
@@ -78,7 +82,8 @@ class CardListComponent extends Component {
 
   componentDidMount() {
     this.props.navigation.setParams({
-      bleManager: this.state.bleManager
+      bleManager: this.state.bleManager,
+      isConnected: this.isConnected
     });
 
     this.state.bleManager.onStateChange(state => {
@@ -87,6 +92,29 @@ class CardListComponent extends Component {
       });
     }, true)
   }
+
+  isConnected = () => {
+    if (!this.props.uartCharacteristic) {
+      return false;
+    }
+    
+    Alert.alert(
+      'Disconnect?',
+      'Current device must be disconnected to continue',
+      [
+        { text: 'OK', onPress: this.disconnect},
+        { text: 'Cancel', onPress: () => null }
+      ],
+      { cancelable: false }
+    );
+
+    return true;
+  };
+
+  disconnect = () => {
+    this.state.bleManager
+      .cancelDeviceConnection(this.props.uartCharacteristic.deviceID);
+  };
 
   renderItem = ({item, index}) => {
     return (

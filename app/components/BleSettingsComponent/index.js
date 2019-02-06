@@ -218,6 +218,9 @@ class BleSettingsComponent extends Component {
 
                   if (uartCharacteristic) {
                     this.props.setUartCharacteristic(uartCharacteristic);
+                    device.onDisconnected(() => {
+                      this.props.setUartCharacteristic(null);
+                    });
 
                     this.setState({ 
                       connectingDialogVisible: false 
@@ -225,8 +228,12 @@ class BleSettingsComponent extends Component {
                       BlocklySync.sync(this.props);
                       this.props.navigation.goBack();
                     });
+                  } else {
+                    this.disconnect(device.id);
                   }
                 });
+            } else {
+              this.disconnect(device.id);
             }
           });
       })
@@ -235,6 +242,8 @@ class BleSettingsComponent extends Component {
         this.showError(error)
       });
   };
+
+  disconnect = id => this.manager.cancelDeviceConnection(id);
 }
 
 const mapStateToProps = state => ({
