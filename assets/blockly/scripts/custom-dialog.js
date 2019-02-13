@@ -43,7 +43,7 @@ Blockly.prompt = function(message, defaultValue, callback) {
       title: message,
       input: 'text',
       inputAttributes: {
-        tabindex: '-1'
+        onfocus: 'Blockly.setInputListeners()'
       },
       showCancelButton: true,
       allowOutsideClick: false,
@@ -53,9 +53,16 @@ Blockly.prompt = function(message, defaultValue, callback) {
         callback(input.value);
       }
     });
+  }
+};
 
-    var input = $('.swal2-input');
-    var container = $('.swal2-popup');
+Blockly.setInputListeners = function() {
+  var input = $('.swal2-input');
+  var container = $('.swal2-popup');
+
+  if (!input.hasClass('loaded')) {
+    input.blur();
+    input.addClass('loaded');
 
     input.focus(function() {
       if (!container.hasClass('focused')) {
@@ -68,5 +75,5 @@ Blockly.prompt = function(message, defaultValue, callback) {
         container.removeClass('focused');
       }
     });
-  }
+  } 
 };

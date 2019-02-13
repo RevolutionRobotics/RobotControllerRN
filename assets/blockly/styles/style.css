@@ -30,6 +30,11 @@ body,
   ry: 2.5px;
 }
 
+.swal2-show {
+  top: 0;
+  transition: top .1s ease-in;
+}
+
 .swal2-popup.swal2-modal.focused {
   position: absolute;
   top: -50px;
