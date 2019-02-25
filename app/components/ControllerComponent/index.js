@@ -6,15 +6,32 @@ import {
   Image,
   PanResponder
 } from 'react-native';
+import ListViewSelect from 'react-native-list-view-select';
 import base64 from 'base64-js';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import HeaderButtons, { HeaderButton, Item } from 'react-navigation-header-buttons';
+import AlertUtils from 'utilities/AlertUtils';
 import { connect } from 'react-redux';
 import { controllerStyle as styles } from 'components/styles';
 
+const MaterialHeaderButton = props => (
+  <HeaderButton {...props} IconComponent={MaterialIcons} iconSize={23} color="white" />
+);
+
 class ControllerComponent extends Component {
 
-  static navigationOptions = {
-    title: 'Remote Controller'
-  };
+  static navigationOptions = ({ navigation }) => ({
+    title: 'Remote Controller',
+    headerRight: (
+      <HeaderButtons HeaderButtonComponent={MaterialHeaderButton}>
+        <Item 
+          title='settings' 
+          iconName={navigation.getParam('settingsIcon') || 'settings'} 
+          onPress={navigation.getParam('settingsPressed')} 
+        />
+      </HeaderButtons>
+    )
+  });
 
   constructor(props) {
     super(props);
@@ -23,10 +40,13 @@ class ControllerComponent extends Component {
     this.state = {
       counter: 0,
       sendTimer: null,
+      settingsMode: false,
+      assignListVisible: false,
       joystickX: 0,
       joystickY: 0,
       joystickR: 0,
       joystickPhi: 0,
+      buttonsInput: 0,
       panResponder: PanResponder.create({
         onStartShouldSetPanResponder: () => true,
         onPanResponderMove: (event, gestureState) => {
@@ -64,6 +84,10 @@ class ControllerComponent extends Component {
         sendTimer: setInterval(this.sendData, 100)
       });
     }
+
+    this.props.navigation.setParams({
+      settingsPressed: this.settingsPressedHandler
+    });
   }
 
   componentWillUnmount() {
@@ -76,12 +100,22 @@ class ControllerComponent extends Component {
 
   offsetPercent = offset => Math.round(offset / (this.joystickSize / 2) * 100);
 
+  settingsPressedHandler = () => {
+    this.setState({
+      settingsMode: !this.state.settingsMode
+    }, () => {
+      this.props.navigation.setParams({
+        settingsIcon: this.state.settingsMode ? 'check' : 'settings'
+      });
+    });
+  };
+
   sendData = async () => {
     const byteArray = new Uint8Array([
       0xff,
       this.offsetPercent(this.state.joystickR),
       this.state.joystickPhi,
-      0x0,
+      this.state.buttonsInput,
       this.state.counter
     ]);
 
@@ -103,19 +137,51 @@ class ControllerComponent extends Component {
     }
   };
 
+  buttonPressed = btnId => {
+    if (this.state.settingsMode) {
+      if (!this.props.savedList.length) {
+        AlertUtils.showError(
+          'Nothing to assign', 
+          'There are no Blockly scripts saved yet.'
+        );
+      } else {
+        this.setState({ assignListVisible: true });
+      }
+    }
+  };
+
+  renderButton = btnId => (
+    <View
+      style={[styles.btnProgrammable, { opacity: this.opacityForButton(btnId) }]}
+      onTouchStart={() => this.setBitForButton(btnId, 1)}
+      onTouchEnd={() => this.setBitForButton(btnId, 0)}
+    />
+  );
+
+  opacityForButton = btnId => (
+    ((this.state.buttonsInput >> btnId) & 1) ? .2 : 1
+  );
+
+  setBitForButton = (btnId, bit) => {
+    const clearMask = ~(1 << btnId);
+    const currentValue = this.state.buttonsInput;
+
+    this.setState({ buttonsInput: (currentValue & clearMask) | (bit << btnId) });
+  };
+
   renderButtons = () => (
     <View style={styles.btnContainer}>
       <View style={[styles.btnContainerColumn, { top: 25 }]}>
-        <TouchableOpacity style={styles.btnProgrammable}></TouchableOpacity>
-        <TouchableOpacity style={styles.btnProgrammable}></TouchableOpacity>
+        {this.renderButton(0)}
+        {this.renderButton(1)}
       </View>
       <View style={[styles.btnContainerColumn, { top: -10 }]}>
-        <TouchableOpacity style={styles.btnProgrammable}></TouchableOpacity>
-        <TouchableOpacity style={styles.btnProgrammable}></TouchableOpacity>
+        {this.renderButton(2)}
+        {this.renderButton(3)}
       </View>
       <View style={[styles.btnContainerColumn, { top: -25 }]}>
-        <TouchableOpacity style={styles.btnProgrammable}></TouchableOpacity>
-        <TouchableOpacity style={styles.btnProgrammable}></TouchableOpacity>
+        {this.renderButton(4)}
+        {this.renderButton(5)}
       </View>
     </View>
   );
@@ -144,11 +210,22 @@ class ControllerComponent extends Component {
     </View>
   );
 
+  renderAssignList = () => (
+    <ListViewSelect
+      list={this.props.savedList.map(item => item.name)}
+      isVisible={this.state.assignListVisible}
+      onClick={() => {}}
+      onClose={() => this.setState({ assignListVisible: false })}
+    />
+  );
+
   render() {
     return (
       <SafeAreaView style={styles.container}>
         {this.renderJoystick()}
-        <View style={styles.centerImageContainer}>
+        <View 
+
+        style={styles.centerImageContainer}>
           <Image 
             style={styles.centerImage} 
             resizeMode='contain'
@@ -157,13 +234,15 @@ class ControllerComponent extends Component {
         </View>
 
         {this.renderButtons()}
+        {this.renderAssignList()}
       </SafeAreaView>
     );
   }
 }
 
 const mapStateToProps = state => ({
-  uartCharacteristic: state.BleReducer.get('uartCharacteristic')
+  uartCharacteristic: state.BleReducer.get('uartCharacteristic'),
+  savedList: state.BlocklyReducer.get('savedList')
 });
 
 const mapDispatchToProps = dispatch => ({
