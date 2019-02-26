@@ -9,6 +9,7 @@ import ControllerComponent from 'components/ControllerComponent';
 import BlocklyComponent from 'components/BlocklyComponent';
 import CodeViewComponent from 'components/CodeViewComponent';
 
+import { navigatorStyle as styles } from 'components/styles';
 import * as action from 'actions/BlocklyAction';
 
 const RootNavigator = createStackNavigator({
@@ -21,15 +22,9 @@ const RootNavigator = createStackNavigator({
   initialRouteName: 'CardList',
   defaultNavigationOptions: {
     title: 'Revvy App',
-    headerStyle: {
-      backgroundColor: '#f90000'
-    },
-    headerTitleStyle: {
-      color: 'white'
-    },
-    headerBackTitleStyle: {
-      color: 'white'
-    },
+    headerStyle: styles.headerStyle,
+    headerTitleStyle: styles.headerTitleStyle,
+    headerBackTitleStyle: styles.headerBackTitleStyle,
     headerTintColor: 'white'
   }
 });
@@ -52,8 +47,7 @@ class NavigatorComponent extends Component {
   render() {
     return (
       <View style={{ flex: 1 }}>
-        <StatusBar 
-          backgroundColor={'#f90000'}
+        <StatusBar
           barStyle={'light-content'}
           translucent={false}
           hidden={true}

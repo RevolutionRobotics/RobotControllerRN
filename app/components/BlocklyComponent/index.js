@@ -210,6 +210,7 @@ class BlocklyComponent extends Component {
               <TextInput 
                 style={styles.dialogInput} 
                 placeholder={'Script name...'}
+                placeholderTextColor={'#aaaaaa'}
                 onChangeText={value => this.setState({ saveInputValue: value })}
                 value={this.state.saveInputValue}
               ></TextInput>
@@ -272,7 +273,7 @@ class BlocklyComponent extends Component {
           });
         }}
       >
-        <Text style={{ textAlign: 'center' }}>{item.name}</Text>
+        <Text style={{ textAlign: 'center', color: 'white' }}>{item.name}</Text>
       </TouchableOpacity>
     );
   };

@@ -76,7 +76,7 @@ class BleSettingsComponent extends Component {
               {`Connecting to ${currentDeviceName || 'BLE device'}...`}
             </Text>
             <View style={styles.connectingIndicatorContainer}>
-              <ActivityIndicator size="large" color="#f90000" />
+              <ActivityIndicator size="large" color="#e60312" />
             </View>
             <View style={styles.dialogButtonContainer}>
               <TouchableOpacity style={styles.dialogButton} onPress={() => {
