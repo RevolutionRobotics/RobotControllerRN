@@ -245,15 +245,13 @@ const blocklyStyle = StyleSheet.create({
 const codeViewStyle = StyleSheet.create({
   container: {
     flex: 1, 
-    backgroundColor: defaultValues.appBackground
+    backgroundColor: '#f5f2f0'
   },
   highlighter: {
     paddingVertical: 10,
-    paddingHorizontal: 20,
-    backgroundColor: defaultValues.appBackground
+    paddingHorizontal: 20
   },
   highlighterContent: {
-    backgroundColor: defaultValues.appBackground,
     flex: 1
   }
 });

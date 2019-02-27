@@ -12,7 +12,7 @@ export default class CodeViewComponent extends Component {
           customStyle={styles.highlighter}
           contentContainerStyle={styles.highlighterContent}
           language='python'
-          highlighter={'hljs'}
+          highlighter={ 'prism' || 'hljs' }
         >
           {this.props.navigation.state.params.code}
         </SyntaxHighlighter>
