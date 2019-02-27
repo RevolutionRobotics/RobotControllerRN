@@ -5,7 +5,8 @@
   "scripts": {
     "start": "node node_modules/react-native/local-cli/cli.js start",
     "test": "jest",
-    "bundle": "bash bundle.sh"
+    "bundle-android": "bash bundle.sh",
+    "bundle-ios": "react-native bundle --entry-file='index.js' --bundle-output='./ios/RobotController/main.jsbundle' --dev=false --platform='ios' --assets-dest='./ios'"
   },
   "dependencies": {
     "base64-js": "^1.3.0",
