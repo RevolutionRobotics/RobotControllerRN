@@ -1,3 +1,7 @@
+* {
+  font-family: sans-serif;
+}
+
 html, 
 body, 
 #blockly-div {
@@ -10,18 +14,40 @@ body,
   display: none;
 }
 
-.blocklySvg .blocklyScrollbarHorizontal .blocklyScrollbarHandle {
+#blockly-div .injectionDiv .blocklyScrollbarHorizontal .blocklyScrollbarHandle {
   height: 5px;
   y: 20px;
 }
 
-.blocklySvg .blocklyScrollbarVertical .blocklyScrollbarHandle {
+#blockly-div .injectionDiv .blocklyScrollbarVertical .blocklyScrollbarHandle {
   width: 5px;
   x: 20px;
 }
 
-.blocklySvg .blocklyScrollbarHorizontal .blocklyScrollbarHandle,
-.blocklySvg .blocklyScrollbarVertical .blocklyScrollbarHandle {
+#blockly-div .injectionDiv .blocklyScrollbarHorizontal .blocklyScrollbarHandle,
+#blockly-div .injectionDiv .blocklyScrollbarVertical .blocklyScrollbarHandle {
   rx: 2.5px;
   ry: 2.5px;
+}
+
+.swal2-show {
+  top: 0;
+  transition: top .1s ease-in;
+}
+
+.swal2-popup.swal2-modal.focused {
+  position: absolute;
+  top: -50px;
+}
+
+.blocklyToolboxDiv {
+  padding-left: env(safe-area-inset-left);
+  padding-left: constant(safe-area-inset-left);
+}
+
+@media screen and (min-width: 768px) {
+  .swal2-popup.swal2-modal.focused {
+    position: relative;
+    top: auto;
+  }
 }
