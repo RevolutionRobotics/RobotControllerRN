@@ -28,7 +28,7 @@ const listData = [
   },
   {
     title: 'Robot Configurator',
-    navigation: ''
+    navigation: 'RobotConfig'
   }
 ];
 

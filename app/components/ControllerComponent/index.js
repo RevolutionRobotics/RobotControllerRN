@@ -6,7 +6,6 @@ import {
   Image,
   PanResponder
 } from 'react-native';
-import ListViewSelect from 'react-native-list-view-select';
 import base64 from 'base64-js';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import HeaderButtons, { HeaderButton, Item } from 'react-navigation-header-buttons';
@@ -211,12 +210,7 @@ class ControllerComponent extends Component {
   );
 
   renderAssignList = () => (
-    <ListViewSelect
-      list={this.props.savedList.map(item => item.name)}
-      isVisible={this.state.assignListVisible}
-      onClick={() => {}}
-      onClose={() => this.setState({ assignListVisible: false })}
-    />
+    <View />
   );
 
   render() {

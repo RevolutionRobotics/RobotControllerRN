@@ -7,6 +7,7 @@ import CardListComponent from 'components/CardListComponent';
 import BleSettingsComponent from 'components/BleSettingsComponent';
 import ControllerComponent from 'components/ControllerComponent';
 import BlocklyComponent from 'components/BlocklyComponent';
+import RobotConfigComponent from 'components/RobotConfigComponent';
 import CodeViewComponent from 'components/CodeViewComponent';
 
 import { navigatorStyle as styles } from 'components/styles';
@@ -17,6 +18,7 @@ const RootNavigator = createStackNavigator({
   BleSettings: { screen: BleSettingsComponent },
   Controller: { screen: ControllerComponent },
   Blockly: { screen: BlocklyComponent },
+  RobotConfig: { screen: RobotConfigComponent },
   CodeView: { screen: CodeViewComponent }
 }, {
   initialRouteName: 'CardList',

@@ -5,6 +5,7 @@
       "root": ["./"],
       "alias": {
         "components": "./app/components",
+        "widgets": "./app/widgets",
         "actions": "./app/actions",
         "reducers": "./app/reducers",
         "utilities": "./app/utilities",
