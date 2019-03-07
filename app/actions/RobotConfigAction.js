@@ -5,7 +5,8 @@ export const setRobotConfig = config => ({
   config
 });
 
-export const updateRobotConfig = config => ({
+export const updateRobotConfig = (path, value) => ({
   type: Actions.UPDATE_ROBOT_CONFIG,
-  config
+  path,
+  value
 });

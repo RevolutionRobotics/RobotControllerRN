@@ -1,23 +1,15 @@
 import React, { Component } from 'react';
 import {  
-  FlatList, 
-  TouchableOpacity, 
   Text,
   TextInput,
-  Alert,
   View,
   SafeAreaView,
-  Platform,
-
-
   StyleSheet
 } from 'react-native';
 import { connect } from 'react-redux';
-
 import RNPickerSelect from 'react-native-picker-select';
 
 import KeyboardAwareSectionList from 'widgets/KeyboardAwareSectionList';
-
 import ArrayUtils from 'utilities/ArrayUtils';
 import * as action from 'actions/RobotConfigAction';
 import { robotConfigStyle as styles } from 'components/styles';
@@ -57,58 +49,70 @@ class RobotConfigComponent extends Component {
           ...styles.configPicker
         }
       })
-    }
+    };
   }
 
-  renderMotorTypes = () => (
+  updateValue = (section, item, key, value) => {
+    this.props.updateConfig([section, 'data', item, key], value);
+  };
+
+  renderMotorTypes = itemIndex => (
     <View>
       <RNPickerSelect
         style={this.state.configPickerStyle}
         useNativeAndroidPickerStyle={false}
         placeholder={{}}
-        itemKey={'None'}
+        value={this.props.savedConfig.getIn([0, 'data', itemIndex, 'type'])}
         items={this.state.motorTypes}
-        onValueChange={() => {}}
+        onValueChange={(_, index) => {
+          this.updateValue(0, itemIndex, 'type', index);
+        }}
       />
       <RNPickerSelect
         style={this.state.configPickerStyle}
         useNativeAndroidPickerStyle={false}
         placeholder={{}}
-        itemKey={'Clockwise'}
+        value={this.props.savedConfig.getIn([0, 'data', itemIndex, 'direction'])}
         items={[
           {
             label: 'Clockwise',
-            value: true
+            value: 0
           },
           {
             label: 'Counter clockwise',
-            value: false
+            value: 1
           }
         ]}
-        onValueChange={() => {}}
+        onValueChange={(_, index) => {
+          this.updateValue(0, itemIndex, 'direction', index);
+        }}
       />
     </View>
   );
 
-  renderSensorTypes = () => (
+  renderSensorTypes = itemIndex => (
     <RNPickerSelect
       style={this.state.configPickerStyle}
       useNativeAndroidPickerStyle={false}
       placeholder={{}}
-      itemKey={'None'}
+      value={this.props.savedConfig.getIn([1, 'data', itemIndex, 'type'])}
       items={this.state.sensorTypes}
-      onValueChange={() => {}}
+      onValueChange={(_, index) => {
+        this.updateValue(1, itemIndex, 'type', index);
+      }}
     />
   );
 
   renderRow = itemProps => {
     const itemIndex = itemProps.index;
     const isMotor = itemProps.section.title === 'Motors';
+    const sectionIndex = isMotor ? 0 : 1;
 
     return (
       <View style={styles.rowContainer}>
         {itemProps.item.map((item, rowIndex) => {
-          const id = `${isMotor ? 'M' : 'S'}${itemIndex * 2 + rowIndex + 1}`;
+          const index = itemIndex * 2 + rowIndex;
+          const id = `${isMotor ? 'M' : 'S'}${index + 1}`;
 
           return (
             <View style={styles.itemPropsContainer} key={id}>
@@ -118,11 +122,19 @@ class RobotConfigComponent extends Component {
                 style={styles.dialogInput}
                 placeholder='name'
                 placeholderTextColor={'#aaaaaa'}
-                onChangeText={text => console.log(text)}
+                onChangeText={text => {
+                  this.updateValue(sectionIndex, index, 'name', text);
+                }}
+                value={this.props.savedConfig.getIn(
+                  [sectionIndex, 'data', index, 'name']
+                )}
               />
 
               <Text style={styles.configLabel}>Type:</Text>
-              {isMotor ? this.renderMotorTypes() : this.renderSensorTypes()}
+              { isMotor 
+                ? this.renderMotorTypes(index) 
+                : this.renderSensorTypes(index)
+              }
             </View>
           );
         })}
@@ -134,7 +146,7 @@ class RobotConfigComponent extends Component {
     <KeyboardAwareSectionList
       style={styles.listContainer}
       contentContainerStyle={styles.listContentStyle}
-      sections={sections.map(section => ({
+      sections={sections.toJS().map(section => ({
         ...section, 
         data: ArrayUtils.chunk(section.data, 2)
       }))}
@@ -159,11 +171,11 @@ class RobotConfigComponent extends Component {
 }
 
 const mapStateToProps = state => ({
-  savedConfig: state.RobotConfigReducer.get('savedConfig').toJS()
+  savedConfig: state.RobotConfigReducer.get('savedConfig')
 });
 
 const mapDispatchToProps = dispatch => ({
-  // TODO: Implement mapping... 
+  updateConfig: (path, value) => dispatch(action.updateRobotConfig(path, value))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(RobotConfigComponent);

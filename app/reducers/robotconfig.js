@@ -1,43 +1,42 @@
 import * as Actions from 'actions/ActionTypes';
-import { Map, List } from 'immutable';
-
-import base64 from 'base64-js';
+import { fromJS } from 'immutable';
+import { AsyncStorage } from 'react-native';
 
 const motorCount = 6;
 const sensorCount = 4;
 
 const savedKey = 'savedConfig';
 const save = state => {
-  AsyncStorage.setItem(savedKey, JSON.stringify(state.toJS().savedConfig));
+  AsyncStorage.setItem(savedKey, JSON.stringify(state.get('savedConfig').toJS()));
   return state;
 };
 
-const initialState = Map({
-  savedConfig: List([
+const initialState = fromJS({
+  savedConfig: [
     {
       title: 'Motors',
       data: Array(motorCount).fill({
         name: '',
-        type: 0,
-        clockwise: true
+        type: 0, // ['None', 'Motor', 'Drivetrain']
+        direction: 0 // ['Clockwise', 'Counter clockwise']
       })
     },
     {
       title: 'Sensors',
       data: Array(sensorCount).fill({
         name: '',
-        type: 0
+        type: 0 // ['None', 'Ultrasonic', 'Button']
       })
     }
-  ])
+  ]
 });
 
 const RobotConfigReducer = (state = initialState, action) => {
   switch (action.type) {
     case Actions.SET_ROBOT_CONFIG:
-      return state.set(savedKey, action.data);
+      return state.set('savedConfig', fromJS(action.config));
     case Actions.UPDATE_ROBOT_CONFIG:
-      return save(state.set(savedKey, action.data));
+      return save(state.setIn(['savedConfig', ...action.path], action.value));
     default:
       return state;
   }

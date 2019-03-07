@@ -11,7 +11,9 @@ import RobotConfigComponent from 'components/RobotConfigComponent';
 import CodeViewComponent from 'components/CodeViewComponent';
 
 import { navigatorStyle as styles } from 'components/styles';
-import * as action from 'actions/BlocklyAction';
+
+import * as blocklyAction from 'actions/BlocklyAction';
+import * as configAction from 'actions/RobotConfigAction';
 
 const RootNavigator = createStackNavigator({
   CardList: { screen: CardListComponent },
@@ -38,13 +40,18 @@ class NavigatorComponent extends Component {
   constructor(props) {
     super(props);
 
-    AsyncStorage.getItem('savedList')
-      .then(list => {
-        if (list) {
-          props.setBlocklyList(JSON.parse(list));
+    this.loadSavedData('savedList', 'setBlocklyList');
+    this.loadSavedData('savedConfig', 'setRobotConfig');
+  }
+
+  loadSavedData = (key, callbackKey) => {
+    AsyncStorage.getItem(key)
+      .then(data => {
+        if (data) {
+          this.props[callbackKey](JSON.parse(data));
         }
       });
-  }
+  };
 
   render() {
     return (
@@ -65,7 +72,8 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  setBlocklyList: list => dispatch(action.setBlocklyList(list))
+  setBlocklyList: list => dispatch(blocklyAction.setBlocklyList(list)),
+  setRobotConfig: config => dispatch(configAction.setRobotConfig(config))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(NavigatorComponent);
