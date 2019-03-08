@@ -366,6 +366,7 @@ const robotConfigStyle = StyleSheet.create({
     borderWidth: 1,
     paddingLeft: 15,
     paddingRight: 30,
+    paddingVertical: 10,
     marginTop: 10
   },
   configLabel: {

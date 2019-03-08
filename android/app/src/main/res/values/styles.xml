@@ -5,6 +5,7 @@
         <!-- Customize your theme here. -->
         <item name="android:editTextStyle">@style/AppEditTextStyle</item>
         <item name="editTextStyle">@style/AppEditTextStyle</item>
+        <item name="android:editTextBackground">@android:color/transparent</item>
     </style>
 
     <style name="AppEditTextStyle" parent="@style/Widget.AppCompat.EditText">
