@@ -1,4 +1,5 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
+import ExtraDimensions from 'react-native-extra-dimensions-android';
 
 const defaultValues = {
   appPrimary: '#e60312',
@@ -50,9 +51,26 @@ const defaultValues = {
   }
 };
 
+/**
+  To fix Dimensions bug on Android: 
+  https://github.com/facebook/react-native/issues/4934
+**/
+const extraDimensions = StyleSheet.create({
+  dialogSizeAndroid: {
+    width: ExtraDimensions.get('REAL_WINDOW_WIDTH'),
+    height: ExtraDimensions.get('REAL_WINDOW_HEIGHT')
+  },
+  dialogSizeIOS: {
+    flex: 1
+  }
+});
+
 const dialogStyle = StyleSheet.create({
   dialogBackdrop: { 
-    flex: 1,
+    ...((Platform.OS === 'android') 
+      ? extraDimensions.dialogSizeAndroid 
+      : extraDimensions.dialogSizeIOS
+    ),
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)' 
@@ -166,7 +184,26 @@ const controllerStyle = StyleSheet.create({
     width: 120,
     bottom: 60,
     marginHorizontal: 10
-  }
+  },
+  dialogBackdrop: dialogStyle.dialogBackdrop,
+  dialogTitle: defaultValues.dialogTitle,
+  syncDialogContainer: { 
+    width: 300,
+    ...dialogStyle.dialogContainer
+  },
+  syncIndicatorContainer: { 
+    width: '100%',
+    margin: 20, 
+    height: 50 
+  },
+  dialogButtonContainer: {
+    height: 20, 
+    flexDirection: 'column', 
+    alignSelf: 'flex-end', 
+    alignItems: 'flex-end'
+  },
+  dialogButton: defaultValues.dialogButton,
+  dialogButtonLabel: defaultValues.dialogButtonLabel
 });
 
 const blocklyStyle = StyleSheet.create({
@@ -378,8 +415,7 @@ const robotConfigStyle = StyleSheet.create({
     width: 60,
     textAlign: 'center',
     borderRadius: 5,
-    ...defaultValues.shadow,
-
+    ...defaultValues.shadow
   }
 })
 

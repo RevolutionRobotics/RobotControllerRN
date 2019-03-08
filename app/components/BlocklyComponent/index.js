@@ -16,7 +16,6 @@ import { blocklyStyle as styles } from 'components/styles';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import HeaderButtons, { HeaderButton, Item } from 'react-navigation-header-buttons';
 import AlertUtils from 'utilities/AlertUtils';
-import BlocklySync from 'utilities/BlocklySync';
 import * as action from 'actions/BlocklyAction';
 
 const debugMode = false;
@@ -155,8 +154,6 @@ class BlocklyComponent extends Component {
 
     this.setState({ currentName: name });
     this.closeSaveDialog();
-
-    BlocklySync.sync(this.props);
   };
 
   deletePressed = () => {
@@ -178,8 +175,6 @@ class BlocklyComponent extends Component {
         { text: 'Delete', onPress: () => {
           this.props.deleteBlocklyXml(name);
           this.newPressed();
-
-          BlocklySync.sync(this.props);
         }},
         { text: 'Cancel', onPress: () => null }
       ],

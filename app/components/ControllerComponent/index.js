@@ -3,13 +3,17 @@ import {
   TouchableOpacity,
   SafeAreaView,
   View,
+  Text,
   Image,
+  Modal,
+  ActivityIndicator,
   PanResponder
 } from 'react-native';
 import base64 from 'base64-js';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import HeaderButtons, { HeaderButton, Item } from 'react-navigation-header-buttons';
 import AlertUtils from 'utilities/AlertUtils';
+import DataSync from 'utilities/DataSync';
 import { connect } from 'react-redux';
 import { controllerStyle as styles } from 'components/styles';
 
@@ -37,6 +41,7 @@ class ControllerComponent extends Component {
 
     this.joystickSize = 180;
     this.state = {
+      isSyncing: false,
       counter: 0,
       sendTimer: null,
       settingsMode: false,
@@ -80,8 +85,18 @@ class ControllerComponent extends Component {
   componentDidMount() {
     if (this.props.uartCharacteristic) {
       this.setState({
-        sendTimer: setInterval(this.sendData, 100)
-      });
+        isSyncing: true
+      }, () => DataSync.sync(this.props, error => {
+        if (error) {
+          this.interruptSync();
+          return;
+        }
+
+        this.setState({
+          sendTimer: setInterval(this.sendData, 100), 
+          isSyncing: false 
+        });
+      }));
     }
 
     this.props.navigation.setParams({
@@ -93,6 +108,34 @@ class ControllerComponent extends Component {
     if (this.state.sendTimer) {
       clearInterval(this.state.sendTimer);
     }
+  }
+
+  renderSyncDialog = () => (
+    <Modal
+      animationType='fade'
+      transparent={true}
+      visible={this.state.isSyncing}
+      onRequestClose={this.interruptSync}
+      supportedOrientations={['portrait', 'landscape']}
+    >
+      <View style={styles.dialogBackdrop}>
+        <View style={styles.syncDialogContainer}>
+          <Text style={styles.dialogTitle}>{'Syncing data...'}</Text>
+          <View style={styles.syncIndicatorContainer}>
+            <ActivityIndicator size="large" color="#e60312" />
+          </View>
+          <View style={styles.dialogButtonContainer}>
+            <TouchableOpacity style={styles.dialogButton} onPress={this.interruptSync}>
+              <Text style={styles.dialogButtonLabel}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  interruptSync = () => {
+    this.setState({ isSyncing: false }, this.props.navigation.goBack);
   }
 
   radToDeg = rad => (rad / Math.PI * 180);
@@ -229,6 +272,7 @@ class ControllerComponent extends Component {
 
         {this.renderButtons()}
         {this.renderAssignList()}
+        {this.renderSyncDialog()}
       </SafeAreaView>
     );
   }
@@ -236,6 +280,7 @@ class ControllerComponent extends Component {
 
 const mapStateToProps = state => ({
   uartCharacteristic: state.BleReducer.get('uartCharacteristic'),
+  savedConfig: state.RobotConfigReducer.get('savedConfig'),
   savedList: state.BlocklyReducer.get('savedList')
 });
 
