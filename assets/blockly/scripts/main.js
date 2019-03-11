@@ -15,6 +15,11 @@
     oneBasedIndex: false
   });
 
+  Object.keys(customBlocks).forEach(function(key) {
+    Blockly.Blocks[key] = customBlocks[key].definition;
+    Blockly.Python[key] = customBlocks[key].generatorStub;
+  });
+
   workspace.addChangeListener(function(event) {
     if (event.type !== Blockly.Events.UI) {
       var output = JSON.stringify(generateOutput());
