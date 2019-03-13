@@ -183,5 +183,74 @@ var customBlocks = {
       // TODO: Change ORDER_NONE to the correct strength.
       return [code, Blockly.Python.ORDER_NONE];
     }
+  },
+  block_play_note: {
+    definition: {
+      init: function() {
+        this.appendDummyInput()
+            .appendField("Play note")
+            .appendField("Key:")
+            .appendField(new Blockly.FieldDropdown([["C","OPTION_C"], ["C# / Db","OPTION_CS"], ["D","OPTION_D"], ["D# / Eb","OPTION_DS"], ["E","OPTION_E"], ["F","OPTION_F"], ["F# / Gb","OPTION_FS"], ["G","OPTION_G"], ["G# / Ab","OPTION_GS"], ["A","OPTION_A"], ["A# / Bb","OPTION_AS"], ["B","OPTION_B"]]), "KEY")
+            .appendField("Octave:")
+            .appendField(new Blockly.FieldDropdown([["1st","OCTAVE_1"], ["2nd","OCTAVE_2"], ["3rd","OCTAVE_3"], ["4th","OCTAVE_4"], ["5th","OCTAVE_5"], ["6th","OCTAVE_6"], ["7th","OCTAVE_7"], ["8th","OCTAVE_8"]]), "OCTAVE")
+            .appendField("Duration:");
+        this.appendValueInput("DURATION")
+            .setCheck("Number");
+        this.setInputsInline(true);
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(230);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    },
+    generatorStub: function(block) {
+      var dropdown_key = block.getFieldValue('KEY');
+      var dropdown_octave = block.getFieldValue('OCTAVE');
+      var value_name = Blockly.Python.valueToCode(block, 'DURATION', Blockly.Python.ORDER_ATOMIC);
+      // TODO: Assemble Python into code variable.
+      var code = '...\n';
+      return code;
+    }
+  },
+  block_play_tune: {
+    definition: {
+      init: function() {
+        this.appendDummyInput()
+            .appendField("Play tune")
+            .appendField(new Blockly.FieldDropdown([["Tune_1","OPTION_TUNE_1"], ["Tune_2","OPTION_TUNE_2"], ["Tune_3","OPTION_TUNE_3"]]), "TUNE");
+        this.setInputsInline(true);
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(230);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    },
+    generatorStub: function(block) {
+      var dropdown_tune = block.getFieldValue('TUNE');
+      // TODO: Assemble Python into code variable.
+      var code = '...\n';
+      return code;
+    }
+  },
+  block_stop_playback: {
+    definition: {
+      init: function() {
+        this.appendDummyInput()
+            .appendField("Stop playback");
+        this.setInputsInline(true);
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(230);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    },
+    generatorStub: function(block) {
+      // TODO: Assemble Python into code variable.
+      var code = '...\n';
+      return code;
+    }
   }
 };

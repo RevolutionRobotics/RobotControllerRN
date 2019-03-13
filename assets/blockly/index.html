@@ -137,17 +137,28 @@
             </shadow>
           </value>
         </block>
-
         <block type="block_stop_motor"></block>
         <block type="block_stop_all_motors"></block>
-
       </category>
       <category name="Sensors" colour="256">
         <block type="block_ultrasonic_sensor"></block>
         <block type="block_bumper"></block>
         <block type="block_tilt"></block>
       </category>
+      <category name="Sound" colour="256">
+        <block type="block_play_note">
+          <value name="DURATION">
+            <shadow type="math_number">
+              <field name="NUM">0</field>
+            </shadow>
+          </value>
+        </block>
+        <block type="block_play_tune"></block>
+        <block type="block_stop_playback"></block>
+      </category>
+      <category name="Lights" colour="256">
 
+      </category>
       <category name="Variables" custom="VARIABLE" colour="288">
       </category>
       <category name="Functions" custom="PROCEDURE" colour="320">
