@@ -1,4 +1,98 @@
 var customBlocks = {
+  block_repeat_forever: {
+    definition: {
+      init: function() {
+        this.appendDummyInput()
+            .appendField("repeat forever");
+        this.appendStatementInput("STATEMENT")
+            .setCheck(null)
+            .appendField("do");
+        this.setInputsInline(false);
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(120);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    },
+    generatorStub: function(block) {
+      var statements_statement = Blockly.Python.statementToCode(block, 'STATEMENT');
+      // TODO: Assemble Python into code variable.
+      var code = '...\n';
+      return code;
+    }
+  },
+  block_break: {
+    definition: {
+      init: function() {
+        this.appendDummyInput()
+            .appendField("break");
+        this.setInputsInline(false);
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(120);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    },
+    generatorStub: function(block) {
+      // TODO: Assemble Python into code variable.
+      var code = '...\n';
+      return code;
+    }
+  },
+  block_repeat_while: {
+    definition: {
+      init: function() {
+        this.appendValueInput("CONDITION")
+            .setCheck("Boolean")
+            .appendField("repeat while");
+        this.appendStatementInput("STATEMENT")
+            .setCheck(null)
+            .appendField("do");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(120);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      },
+      generatorStub: function(block) {
+        var value_condition = Blockly.Python.valueToCode(block, 'CONDITION', Blockly.Python.ORDER_ATOMIC);
+        var statements_statement = Blockly.Python.statementToCode(block, 'STATEMENT');
+        // TODO: Assemble Python into code variable.
+        var code = '...\n';
+        return code;
+      }
+    }
+  },
+  block_repeat_until: {
+    definition: {
+      init: function() {
+        this.appendDummyInput()
+            .appendField("repeat");
+        this.appendStatementInput("STATEMENT")
+            .setCheck(null)
+            .appendField("do");
+        this.appendValueInput("CONDITION")
+            .setCheck("Boolean")
+            .appendField("until");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(120);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    },
+    generatorStub: function(block) {
+      var statements_statement = Blockly.Python.statementToCode(block, 'STATEMENT');
+      var value_condition = Blockly.Python.valueToCode(block, 'CONDITION', Blockly.Python.ORDER_ATOMIC);
+      // TODO: Assemble Python into code variable.
+      var code = '...\n';
+      return code;
+    }
+  },
+
+
   block_drive: {
     definition: {
       init: function() {
@@ -189,10 +283,32 @@ var customBlocks = {
       init: function() {
         this.appendDummyInput()
             .appendField("Play note")
-            .appendField("Key:")
-            .appendField(new Blockly.FieldDropdown([["C","OPTION_C"], ["C# / Db","OPTION_CS"], ["D","OPTION_D"], ["D# / Eb","OPTION_DS"], ["E","OPTION_E"], ["F","OPTION_F"], ["F# / Gb","OPTION_FS"], ["G","OPTION_G"], ["G# / Ab","OPTION_GS"], ["A","OPTION_A"], ["A# / Bb","OPTION_AS"], ["B","OPTION_B"]]), "KEY")
             .appendField("Octave:")
-            .appendField(new Blockly.FieldDropdown([["1st","OCTAVE_1"], ["2nd","OCTAVE_2"], ["3rd","OCTAVE_3"], ["4th","OCTAVE_4"], ["5th","OCTAVE_5"], ["6th","OCTAVE_6"], ["7th","OCTAVE_7"], ["8th","OCTAVE_8"]]), "OCTAVE")
+            .appendField(new Blockly.FieldDropdown([
+              ["1st","OCTAVE_1"], 
+              ["2nd","OCTAVE_2"], 
+              ["3rd","OCTAVE_3"], 
+              ["4th","OCTAVE_4"], 
+              ["5th","OCTAVE_5"], 
+              ["6th","OCTAVE_6"], 
+              ["7th","OCTAVE_7"], 
+              ["8th","OCTAVE_8"]
+            ]), "OCTAVE")
+            .appendField("Key:")
+            .appendField(new Blockly.FieldDropdown([
+              ["C","OPTION_C"], 
+              ["C# / Db","OPTION_CS"], 
+              ["D","OPTION_D"], 
+              ["D# / Eb","OPTION_DS"], 
+              ["E","OPTION_E"], 
+              ["F","OPTION_F"], 
+              ["F# / Gb","OPTION_FS"], 
+              ["G","OPTION_G"], 
+              ["G# / Ab","OPTION_GS"], 
+              ["A","OPTION_A"], 
+              ["A# / Bb","OPTION_AS"], 
+              ["B","OPTION_B"]
+            ]), "KEY")
             .appendField("Duration:");
         this.appendValueInput("DURATION")
             .setCheck("Number");
@@ -218,7 +334,11 @@ var customBlocks = {
       init: function() {
         this.appendDummyInput()
             .appendField("Play tune")
-            .appendField(new Blockly.FieldDropdown([["Tune_1","OPTION_TUNE_1"], ["Tune_2","OPTION_TUNE_2"], ["Tune_3","OPTION_TUNE_3"]]), "TUNE");
+            .appendField(new Blockly.FieldDropdown([
+              ["Tune_1","OPTION_TUNE_1"], 
+              ["Tune_2","OPTION_TUNE_2"], 
+              ["Tune_3","OPTION_TUNE_3"]
+            ]), "TUNE");
         this.setInputsInline(true);
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
@@ -248,6 +368,31 @@ var customBlocks = {
       }
     },
     generatorStub: function(block) {
+      // TODO: Assemble Python into code variable.
+      var code = '...\n';
+      return code;
+    }
+  },
+  block_set_led: {
+    definition: {
+      init: function() {
+        this.appendValueInput("LED")
+            .setCheck("Number")
+            .appendField("Set LED:");
+        this.appendValueInput("COLOR")
+            .setCheck("Colour")
+            .appendField("Color:");
+        this.setInputsInline(true);
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(230);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    },
+    generatorStub: function(block) {
+      var value_led = Blockly.Python.valueToCode(block, 'LED', Blockly.Python.ORDER_ATOMIC);
+      var value_color = Blockly.Python.valueToCode(block, 'COLOR', Blockly.Python.ORDER_ATOMIC);
       // TODO: Assemble Python into code variable.
       var code = '...\n';
       return code;

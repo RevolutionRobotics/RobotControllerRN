@@ -32,24 +32,33 @@
         <block type="logic_ternary"></block>
       </category>
       <category name="Loops" colour="64">
-        <block type="controls_repeat_ext"></block>
-        <block type="controls_whileUntil"></block>
+        <block type="controls_repeat_ext">
+          <value name="TIMES">
+            <shadow type="math_number">
+              <field name="NUM">0</field>
+            </shadow>
+          </value>
+        </block>
+        <block type="block_repeat_while"></block>
+        <block type="block_repeat_until"></block>
+        <block type="block_repeat_forever"></block>
+        <block type="block_break"></block>
         <block type="controls_for">
           <field name="VAR">i</field>
           <value name="FROM">
-            <block type="math_number">
+            <shadow type="math_number">
               <field name="NUM">0</field>
-            </block>
+            </shadow>
           </value>
           <value name="TO">
-            <block type="math_number">
+            <shadow type="math_number">
               <field name="NUM">10</field>
-            </block>
+            </shadow>
           </value>
           <value name="BY">
-            <block type="math_number">
+            <shadow type="math_number">
               <field name="NUM">1</field>
-            </block>
+            </shadow>
           </value>
         </block>
       </category>
@@ -157,7 +166,18 @@
         <block type="block_stop_playback"></block>
       </category>
       <category name="Lights" colour="256">
-
+        <block type="block_set_led">
+          <value name="LED">
+            <shadow type="math_number">
+              <field name="NUM">1</field>
+            </shadow>
+          </value>
+          <value name="COLOR">
+            <shadow type="colour_picker">
+              <field name="COLOUR">#ffffff</field>
+            </shadow>
+          </value>
+        </block>
       </category>
       <category name="Variables" custom="VARIABLE" colour="288">
       </category>

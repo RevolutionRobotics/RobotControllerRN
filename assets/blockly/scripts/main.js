@@ -22,8 +22,14 @@
 
   workspace.addChangeListener(function(event) {
     if (event.type !== Blockly.Events.UI) {
-      var output = JSON.stringify(generateOutput());
-      window.postMessage(output, '*', false);
+      var outputData = generateOutput();
+      var output = JSON.stringify(outputData);
+
+      try {
+        window.postMessage(output, '*', false);
+      } catch (err) {
+        console.log(outputData.pythonCode);
+      }
     }
   });
 
