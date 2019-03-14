@@ -22,6 +22,16 @@
         <block type="controls_if">
           <mutation elseif="1" else="1"></mutation>
         </block>
+        <block type="block_terminate_program"></block>
+        <block type="block_terminate_all"></block>
+        <block type="block_wait">
+          <value name="WAIT">
+            <shadow type="math_number">
+              <field name="NUM">0</field>
+            </shadow>
+          </value>
+        </block>
+        <block type="block_global_timer"></block>
       </category>
       <category name="Logic" colour="32">
         <block type="logic_compare"></block>
@@ -66,6 +76,19 @@
         <block type="math_number"></block>
         <block type="math_arithmetic"></block>
         <block type="math_round"></block>
+        <block type="math_random_int">
+          <value name="FROM">
+            <shadow type="math_number">
+              <field name="NUM">0</field>
+            </shadow>
+          </value>
+          <value name="TO">
+            <shadow type="math_number">
+              <field name="NUM">100</field>
+            </shadow>
+          </value>
+        </block>
+        <block type="math_trig"></block>
       </category>
       <category name="Text" colour="128">
         <block type="text"></block>

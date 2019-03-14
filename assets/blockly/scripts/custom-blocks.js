@@ -1,4 +1,83 @@
 var customBlocks = {
+  block_terminate_program: {
+    definition: {
+      init: function() {
+        this.appendDummyInput()
+            .appendField("terminate program");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(210);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    },
+    generatorStub: function(block) {
+      // TODO: Assemble Python into code variable.
+      var code = '...\n';
+      return code;
+    }
+  },
+  block_terminate_all: {
+    definition: {
+      init: function() {
+        this.appendDummyInput()
+            .appendField("terminate all");
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(210);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    },
+    generatorStub: function(block) {
+      // TODO: Assemble Python into code variable.
+      var code = '...\n';
+      return code;
+    }
+  },
+  block_wait: {
+    definition: {
+      init: function() {
+        this.appendValueInput("WAIT")
+            .setCheck("Number")
+            .appendField("wait");
+        this.appendDummyInput()
+            .appendField("sec");
+        this.setInputsInline(true);
+        this.setPreviousStatement(true, null);
+        this.setNextStatement(true, null);
+        this.setColour(210);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    },
+    generatorStub: function(block) {
+      var value_wait = Blockly.Python.valueToCode(block, 'WAIT', Blockly.Python.ORDER_ATOMIC);
+      // TODO: Assemble Python into code variable.
+      var code = '...\n';
+      return code;
+    }
+  },
+  block_global_timer: {
+    definition: {
+      init: function() {
+        this.appendDummyInput()
+            .appendField("global timer [sec]");
+        this.setInputsInline(true);
+        this.setOutput(true, "Number");
+        this.setColour(210);
+        this.setTooltip("");
+        this.setHelpUrl("");
+      }
+    },
+    generatorStub: function(block) {
+      // TODO: Assemble Python into code variable.
+      var code = '...';
+      // TODO: Change ORDER_NONE to the correct strength.
+      return [code, Blockly.Python.ORDER_NONE];
+    }
+  },
+
   block_repeat_forever: {
     definition: {
       init: function() {
