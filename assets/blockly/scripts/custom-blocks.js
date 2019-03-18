@@ -12,8 +12,8 @@ var customBlocks = {
       }
     },
     generatorStub: function(block) {
-      // TODO: Assemble Python into code variable.
-      var code = '...\n';
+      Blockly.Python.definitions_['import_robot_lib'] = 'import robot_lib';
+      var code = 'terminate_program()\n';
       return code;
     }
   },
@@ -30,8 +30,8 @@ var customBlocks = {
       }
     },
     generatorStub: function(block) {
-      // TODO: Assemble Python into code variable.
-      var code = '...\n';
+      Blockly.Python.definitions_['import_robot_lib'] = 'import robot_lib';
+      var code = 'terminate_all()\n';
       return code;
     }
   },
@@ -52,9 +52,9 @@ var customBlocks = {
       }
     },
     generatorStub: function(block) {
+      Blockly.Python.definitions_['import_robot_lib'] = 'import robot_lib';
       var value_wait = Blockly.Python.valueToCode(block, 'WAIT', Blockly.Python.ORDER_ATOMIC);
-      // TODO: Assemble Python into code variable.
-      var code = '...\n';
+      var code = 'wait(' + value_wait + ')\n';
       return code;
     }
   },
@@ -71,13 +71,11 @@ var customBlocks = {
       }
     },
     generatorStub: function(block) {
-      // TODO: Assemble Python into code variable.
-      var code = '...';
-      // TODO: Change ORDER_NONE to the correct strength.
-      return [code, Blockly.Python.ORDER_NONE];
+      Blockly.Python.definitions_['import_robot_lib'] = 'import robot_lib';
+      var code = 'get_global_timer()\n';
+      return code;
     }
   },
-
   block_repeat_forever: {
     definition: {
       init: function() {
@@ -96,8 +94,10 @@ var customBlocks = {
     },
     generatorStub: function(block) {
       var statements_statement = Blockly.Python.statementToCode(block, 'STATEMENT');
-      // TODO: Assemble Python into code variable.
-      var code = '...\n';
+      var branch = Blockly.Python.addLoopTrap(statements_statement, block.id) ||
+      Blockly.Python.PASS;
+
+      var code = 'while True:\n' + branch;
       return code;
     }
   },
@@ -115,8 +115,7 @@ var customBlocks = {
       }
     },
     generatorStub: function(block) {
-      // TODO: Assemble Python into code variable.
-      var code = '...\n';
+      var code = 'break\n';
       return code;
     }
   },
@@ -134,14 +133,17 @@ var customBlocks = {
         this.setColour(120);
         this.setTooltip("");
         this.setHelpUrl("");
-      },
-      generatorStub: function(block) {
-        var value_condition = Blockly.Python.valueToCode(block, 'CONDITION', Blockly.Python.ORDER_ATOMIC);
-        var statements_statement = Blockly.Python.statementToCode(block, 'STATEMENT');
-        // TODO: Assemble Python into code variable.
-        var code = '...\n';
-        return code;
       }
+    },
+    generatorStub: function(block) {
+      var value_condition = Blockly.Python.valueToCode(block, 'CONDITION', Blockly.Python.ORDER_ATOMIC);
+      var statements_statement = Blockly.Python.statementToCode(block, 'STATEMENT');
+      
+      var branch = Blockly.Python.addLoopTrap(statements_statement, block.id) ||
+      Blockly.Python.PASS;
+
+      var code = 'while ' + (value_condition || 'False') + ':\n' + branch;
+      return code;
     }
   },
   block_repeat_until: {
@@ -165,13 +167,16 @@ var customBlocks = {
     generatorStub: function(block) {
       var statements_statement = Blockly.Python.statementToCode(block, 'STATEMENT');
       var value_condition = Blockly.Python.valueToCode(block, 'CONDITION', Blockly.Python.ORDER_ATOMIC);
-      // TODO: Assemble Python into code variable.
-      var code = '...\n';
+
+      var branch = Blockly.Python.addLoopTrap(statements_statement, block.id) ||
+      Blockly.Python.PASS;
+
+      branch += '  if ' + (value_condition || 'True') + ': break\n'
+
+      var code = 'while True:\n' + branch;
       return code;
     }
   },
-
-
   block_drive: {
     definition: {
       init: function() {
