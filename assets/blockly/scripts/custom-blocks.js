@@ -13,7 +13,7 @@ var customBlocks = {
     },
     generatorStub: function(block) {
       Blockly.Python.definitions_['import_robot_lib'] = 'import robot_lib';
-      var code = 'terminate_program()\n';
+      var code = 'Control.terminate_program()\n';
       return code;
     }
   },
@@ -31,7 +31,7 @@ var customBlocks = {
     },
     generatorStub: function(block) {
       Blockly.Python.definitions_['import_robot_lib'] = 'import robot_lib';
-      var code = 'terminate_all()\n';
+      var code = 'Control.terminate_all()\n';
       return code;
     }
   },
@@ -52,9 +52,9 @@ var customBlocks = {
       }
     },
     generatorStub: function(block) {
-      Blockly.Python.definitions_['import_robot_lib'] = 'import robot_lib';
+      Blockly.Python.definitions_['import_time'] = 'import time';
       var value_wait = Blockly.Python.valueToCode(block, 'WAIT', Blockly.Python.ORDER_ATOMIC);
-      var code = 'wait(' + value_wait + ')\n';
+      var code = 'time.sleep(' + value_wait + ')\n';
       return code;
     }
   },
@@ -72,7 +72,7 @@ var customBlocks = {
     },
     generatorStub: function(block) {
       Blockly.Python.definitions_['import_robot_lib'] = 'import robot_lib';
-      var code = 'get_global_timer()\n';
+      var code = 'Control.get_global_timer()\n';
       return code;
     }
   },
@@ -184,27 +184,25 @@ var customBlocks = {
           .appendField("Drive")
           .appendField("Direction:")
           .appendField(new Blockly.FieldDropdown([
-            ["forward","FORWARD"], 
-            ["left","LEFT"],
-            ["right","RIGHT"],
-            ["backward","BACKWARD"],
+            ["forward","Motor.DIRECTION_FWD"], 
+            ["left","Motor.DIRECTION_LEFT"],
+            ["right","Motor.DIRECTION_RIGHT"],
+            ["backward","Motor.DIRECTION_BACK"],
           ]), "DIRECTION");
-        this.appendValueInput("VALUE_1")
+        this.appendValueInput("ROTATION")
           .setCheck("Number");
         this.appendDummyInput()
           .appendField(new Blockly.FieldDropdown([
-            ["rotation","OPTION_DRIVE_ROT"], 
-            ["sec","OPTION_DRIVE_SEC"]
-          ]), "UNIT_1");
-
-        this.appendValueInput("VALUE_2")
+            ["rotation","Motor.UNIT_ROT"], 
+            ["sec","Motor.UNIT_SEC"]
+          ]), "UNIT_ROTATION");
+        this.appendValueInput("SPEED")
           .setCheck("Number");
         this.appendDummyInput()
           .appendField(new Blockly.FieldDropdown([
-            ["rpm","OPTION_DRIVE_RPM"], 
-            ["power","OPTION_DRIVE_PWR"]
-          ]), "UNIT_2");
-
+            ["rpm","Motor.UNIT_SPEED_RPM"], 
+            ["power","Motor.UNIT_SPEED_PWR"]
+          ]), "UNIT_SPEED");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
         this.setColour(45);
@@ -213,12 +211,21 @@ var customBlocks = {
       }
     },
     generatorStub: function(block) {
-      var text_name = block.getFieldValue('NAME');
-      var dropdown_rotation = block.getFieldValue('ROTATION');
-      var number_rotation_value = block.getFieldValue('ROTATION_VALUE');
-      var dropdown_name = block.getFieldValue('NAME');
-      // TODO: Assemble Python into code variable.
-      var code = '...\n';
+      var dropdown_direction = block.getFieldValue('DIRECTION');
+      var number_rotation = Blockly.Python.valueToCode(block, 'ROTATION', Blockly.Python.ORDER_ATOMIC);
+      var unit_rotation = block.getFieldValue('UNIT_ROTATION');
+      var number_speed = Blockly.Python.valueToCode(block, 'SPEED', Blockly.Python.ORDER_ATOMIC);
+      var unit_speed = block.getFieldValue('UNIT_SPEED');
+
+      Blockly.Python.definitions_['import_robot_lib'] = 'import robot_lib';
+      var code = 'Motor.drive(' 
+        + 'direction=' + dropdown_direction + ', '
+        + 'rotation=' + number_rotation + ', '
+        + 'unit_rotation=' + unit_rotation + ', '
+        + 'speed=' + number_speed + ', '
+        + 'unit_speed=' + unit_speed
+        + ')\n';
+
       return code;
     }
   },
@@ -231,17 +238,17 @@ var customBlocks = {
           .appendField(new Blockly.FieldTextInput("M1"), "NAME")
           .appendField("Rotation:")
           .appendField(new Blockly.FieldDropdown([
-            ["clockwise","CW"], 
-            ["counter clockwise","CCW"]
-          ]), "ROTATION");
-        this.appendValueInput("VALUE")
+            ["clockwise","Motor.DIR_CW"], 
+            ["counter clockwise","Motor.DIR_CCW"]
+          ]), "DIRECTION");
+        this.appendValueInput("ROTATION")
           .setCheck("Number");
         this.appendDummyInput()
           .appendField(new Blockly.FieldDropdown([
-            ["deg","OPTION_DEG"], 
-            ["rotation","OPTION_ROT"], 
-            ["sec","OPTION_SEC"]
-          ]), "UNIT");
+            ["deg","Motor.UNIT_DEG"], 
+            ["rotation","Motor.UNIT_ROT"], 
+            ["sec","Motor.UNIT_SEC"]
+          ]), "UNIT_ROTATION");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
         this.setColour(45);
@@ -250,8 +257,19 @@ var customBlocks = {
       }
     },
     generatorStub: function(block) {
-      // TODO: Assemble Python into code variable.
-      var code = '...\n';
+      var text_name = block.getFieldValue('NAME');
+      var dropdown_direction = block.getFieldValue('DIRECTION');
+      var number_rotation = Blockly.Python.valueToCode(block, 'ROTATION', Blockly.Python.ORDER_ATOMIC);
+      var dropdown_unit = block.getFieldValue('UNIT_ROTATION');
+
+      Blockly.Python.definitions_['import_robot_lib'] = 'import robot_lib';
+      var code = 'Motor.motor(' 
+        + "name='" + text_name + "', "
+        + 'direction=' + dropdown_direction + ', '
+        + 'rotation=' + number_rotation + ', '
+        + 'unit_rotation=' + dropdown_unit
+        + ')\n';
+
       return code;
     }
   },
@@ -263,9 +281,9 @@ var customBlocks = {
           .appendField("Motor:")
           .appendField(new Blockly.FieldTextInput("M1"), "NAME")
           .appendField(new Blockly.FieldDropdown([
-            ["Stop & hold","STOP_AND_HOLD"], 
-            ["Release","RELEASE"]
-          ]), "STOP_ALL");
+            ["Stop & hold","Motor.ACTION_STOP_AND_HOLD"], 
+            ["Release","Motor.ACTION_RELEASE"]
+          ]), "STOP_ACTION");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
         this.setColour(45);
@@ -274,8 +292,14 @@ var customBlocks = {
       }
     },
     generatorStub: function(block) {
-      // TODO: Assemble Python into code variable.
-      var code = '...\n';
+      var text_name = block.getFieldValue('NAME');
+      var dropdown_action = block.getFieldValue('STOP_ACTION');
+
+      Blockly.Python.definitions_['import_robot_lib'] = 'import robot_lib';
+      var code = 'Motor.stop('
+        + "name='" + text_name + "', "
+        + 'action=' + dropdown_action
+        + ')\n';
       return code;
     }
   },
@@ -286,9 +310,9 @@ var customBlocks = {
           .appendField("Stop all motors")
           .appendField("Action:")
           .appendField(new Blockly.FieldDropdown([
-            ["Stop & hold","STOP_AND_HOLD"], 
-            ["Release","RELEASE"]
-          ]), "STOP_ALL");
+            ["Stop & hold","Motor.ACTION_STOP_AND_HOLD"], 
+            ["Release","Motor.ACTION_RELEASE"]
+          ]), "STOP_ALL_ACTION");
         this.setPreviousStatement(true, null);
         this.setNextStatement(true, null);
         this.setColour(45);
@@ -297,8 +321,10 @@ var customBlocks = {
       }
     },
     generatorStub: function(block) {
-      // TODO: Assemble Python into code variable.
-      var code = '...\n';
+      var dropdown_action = block.getFieldValue('STOP_ALL_ACTION');
+
+      Blockly.Python.definitions_['import_robot_lib'] = 'import robot_lib';
+      var code = 'Motor.stop_all(action=' + dropdown_action + ')\n';
       return code;
     }
   },
