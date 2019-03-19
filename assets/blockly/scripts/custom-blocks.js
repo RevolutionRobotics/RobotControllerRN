@@ -340,9 +340,8 @@ var customBlocks = {
       }
     },
     generatorStub: function(block) {
-      // TODO: Assemble Python into code variable.
-      var code = '...';
-      // TODO: Change ORDER_NONE to the correct strength.
+      Blockly.Python.definitions_['import_robot_lib'] = 'import robot_lib';
+      var code = 'Sensor.get_ultrasonic_value()\n';
       return [code, Blockly.Python.ORDER_NONE];
     }
   },
@@ -358,9 +357,8 @@ var customBlocks = {
       }
     },
     generatorStub: function(block) {
-      // TODO: Assemble Python into code variable.
-      var code = '...';
-      // TODO: Change ORDER_NONE to the correct strength.
+      Blockly.Python.definitions_['import_robot_lib'] = 'import robot_lib';
+      var code = 'Sensor.get_bumper_pressed_state()\n';
       return [code, Blockly.Python.ORDER_NONE];
     }
   },
@@ -370,11 +368,11 @@ var customBlocks = {
         this.appendDummyInput()
             .appendField("Tilt control")
             .appendField(new Blockly.FieldDropdown([
-              ["forward","FORWARD"], 
-              ["left","LEFT"],
-              ["right","RIGHT"],
-              ["backward","BACKWARD"],
-            ]), "DIRECTION");
+              ["forward","Sensor.TILT_FWD"], 
+              ["left","Sensor.TILT_LEFT"],
+              ["right","Sensor.TILT_RIGHT"],
+              ["backward","Sensor.TILT_BACK"],
+            ]), "DIRECTION_TILT");
         this.setOutput(true, "Boolean");
         this.setColour(230);
         this.setTooltip("");
@@ -382,9 +380,9 @@ var customBlocks = {
       }
     },
     generatorStub: function(block) {
-      // TODO: Assemble Python into code variable.
-      var code = '...';
-      // TODO: Change ORDER_NONE to the correct strength.
+      var dropdown_tilt = block.getFieldValue('DIRECTION_TILT');
+      Blockly.Python.definitions_['import_robot_lib'] = 'import robot_lib';
+      var code = 'Sensor.get_tilt_state(direction=' + dropdown_tilt + ')\n';
       return [code, Blockly.Python.ORDER_NONE];
     }
   },
