@@ -393,29 +393,29 @@ var customBlocks = {
             .appendField("Play note")
             .appendField("Octave:")
             .appendField(new Blockly.FieldDropdown([
-              ["1st","OCTAVE_1"], 
-              ["2nd","OCTAVE_2"], 
-              ["3rd","OCTAVE_3"], 
-              ["4th","OCTAVE_4"], 
-              ["5th","OCTAVE_5"], 
-              ["6th","OCTAVE_6"], 
-              ["7th","OCTAVE_7"], 
-              ["8th","OCTAVE_8"]
+              ["1st","Sound.OCTAVE_1"], 
+              ["2nd","Sound.OCTAVE_2"], 
+              ["3rd","Sound.OCTAVE_3"], 
+              ["4th","Sound.OCTAVE_4"], 
+              ["5th","Sound.OCTAVE_5"], 
+              ["6th","Sound.OCTAVE_6"], 
+              ["7th","Sound.OCTAVE_7"], 
+              ["8th","Sound.OCTAVE_8"]
             ]), "OCTAVE")
             .appendField("Key:")
             .appendField(new Blockly.FieldDropdown([
-              ["C","OPTION_C"], 
-              ["C# / Db","OPTION_CS"], 
-              ["D","OPTION_D"], 
-              ["D# / Eb","OPTION_DS"], 
-              ["E","OPTION_E"], 
-              ["F","OPTION_F"], 
-              ["F# / Gb","OPTION_FS"], 
-              ["G","OPTION_G"], 
-              ["G# / Ab","OPTION_GS"], 
-              ["A","OPTION_A"], 
-              ["A# / Bb","OPTION_AS"], 
-              ["B","OPTION_B"]
+              ["C","Sound.OPTION_C"], 
+              ["C# / Db","Sound.OPTION_CS"], 
+              ["D","Sound.OPTION_D"], 
+              ["D# / Eb","Sound.OPTION_DS"], 
+              ["E","Sound.OPTION_E"], 
+              ["F","Sound.OPTION_F"], 
+              ["F# / Gb","Sound.OPTION_FS"], 
+              ["G","Sound.OPTION_G"], 
+              ["G# / Ab","Sound.OPTION_GS"], 
+              ["A","Sound.OPTION_A"], 
+              ["A# / Bb","Sound.OPTION_AS"], 
+              ["B","Sound.OPTION_B"]
             ]), "KEY")
             .appendField("Duration:");
         this.appendValueInput("DURATION")
@@ -429,11 +429,17 @@ var customBlocks = {
       }
     },
     generatorStub: function(block) {
-      var dropdown_key = block.getFieldValue('KEY');
       var dropdown_octave = block.getFieldValue('OCTAVE');
-      var value_name = Blockly.Python.valueToCode(block, 'DURATION', Blockly.Python.ORDER_ATOMIC);
-      // TODO: Assemble Python into code variable.
-      var code = '...\n';
+      var dropdown_key = block.getFieldValue('KEY');
+      var value_duration = Blockly.Python.valueToCode(block, 'DURATION', Blockly.Python.ORDER_ATOMIC);
+
+      Blockly.Python.definitions_['import_robot_lib'] = 'import robot_lib';
+      var code = 'Sound.play_note(' 
+        + "octave='" + dropdown_octave + "', "
+        + 'key=' + dropdown_key + ', '
+        + 'duration=' + value_duration
+        + ')\n';
+
       return code;
     }
   },
@@ -443,9 +449,9 @@ var customBlocks = {
         this.appendDummyInput()
             .appendField("Play tune")
             .appendField(new Blockly.FieldDropdown([
-              ["Tune_1","OPTION_TUNE_1"], 
-              ["Tune_2","OPTION_TUNE_2"], 
-              ["Tune_3","OPTION_TUNE_3"]
+              ["Tune_1","Tune_1"], 
+              ["Tune_2","Tune_2"], 
+              ["Tune_3","Tune_3"]
             ]), "TUNE");
         this.setInputsInline(true);
         this.setPreviousStatement(true, null);
@@ -457,8 +463,10 @@ var customBlocks = {
     },
     generatorStub: function(block) {
       var dropdown_tune = block.getFieldValue('TUNE');
-      // TODO: Assemble Python into code variable.
-      var code = '...\n';
+      
+      Blockly.Python.definitions_['import_robot_lib'] = 'import robot_lib';
+      var code = "Sound.play_tune('" + dropdown_tune + "')\n";
+
       return code;
     }
   },
@@ -476,8 +484,7 @@ var customBlocks = {
       }
     },
     generatorStub: function(block) {
-      // TODO: Assemble Python into code variable.
-      var code = '...\n';
+      var code = 'Sound.stop_playback()\n';
       return code;
     }
   },
@@ -501,8 +508,12 @@ var customBlocks = {
     generatorStub: function(block) {
       var value_led = Blockly.Python.valueToCode(block, 'LED', Blockly.Python.ORDER_ATOMIC);
       var value_color = Blockly.Python.valueToCode(block, 'COLOR', Blockly.Python.ORDER_ATOMIC);
-      // TODO: Assemble Python into code variable.
-      var code = '...\n';
+      
+      Blockly.Python.definitions_['import_robot_lib'] = 'import robot_lib';
+      var code = 'Light.set(' 
+        + 'led_index=' + value_led + ', ' 
+        + 'color=' + value_color + ')\n';
+
       return code;
     }
   }
