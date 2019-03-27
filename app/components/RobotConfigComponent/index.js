@@ -87,8 +87,40 @@ class RobotConfigComponent extends Component {
           this.updateValue(0, itemIndex, 'direction', index);
         }}
       />
+      {this.renderSidePicker(itemIndex)}
     </View>
   );
+
+  renderSidePicker = itemIndex => {
+    if (this.props.savedConfig.getIn([0, 'data', itemIndex, 'type']) !== 2) {
+      return <View />;
+    }
+
+    return (
+      <View>
+        <Text style={styles.configLabel}>Side:</Text>
+        <RNPickerSelect
+          style={this.state.configPickerStyle}
+          useNativeAndroidPickerStyle={false}
+          placeholder={{}}
+          value={this.props.savedConfig.getIn([0, 'data', itemIndex, 'side'])}
+          items={[
+            {
+              label: 'Left',
+              value: 0
+            },
+            {
+              label: 'Right',
+              value: 1
+            }
+          ]}
+          onValueChange={(_, index) => {
+            this.updateValue(0, itemIndex, 'side', index);
+          }}
+        />
+      </View>
+    );
+  }
 
   renderSensorTypes = itemIndex => (
     <RNPickerSelect
@@ -151,6 +183,7 @@ class RobotConfigComponent extends Component {
         data: ArrayUtils.chunk(section.data, 2)
       }))}
       renderItem={itemProps => this.renderRow(itemProps)}
+      stickySectionHeadersEnabled={false}
       renderSectionHeader={({section}) => (
         <Text style={styles.sectionTitle}>{section.title}</Text>
       )}

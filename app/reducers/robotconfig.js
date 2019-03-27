@@ -18,7 +18,8 @@ const initialState = fromJS({
       data: Array(motorCount).fill({
         name: '',
         type: 0, // ['None', 'Motor', 'Drivetrain']
-        direction: 0 // ['Clockwise', 'Counter clockwise']
+        direction: 0, // ['Clockwise', 'Counter clockwise']
+        side: 0 // ['Left', 'Right']
       })
     },
     {
