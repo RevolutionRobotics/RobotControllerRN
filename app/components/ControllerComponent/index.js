@@ -14,6 +14,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import HeaderButtons, { HeaderButton, Item } from 'react-navigation-header-buttons';
 import AlertUtils from 'utilities/AlertUtils';
 import DataSync from 'utilities/DataSync';
+import MultiTouchComponent from 'widgets/MultiTouchComponent';
 import { connect } from 'react-redux';
 import { controllerStyle as styles } from 'components/styles';
 
@@ -195,8 +196,10 @@ class ControllerComponent extends Component {
   renderButton = btnId => (
     <View
       style={[styles.btnProgrammable, { opacity: this.opacityForButton(btnId) }]}
-      onTouchStart={() => this.setBitForButton(btnId, 1)}
-      onTouchEnd={() => this.setBitForButton(btnId, 0)}
+      onMultiTouch={event => this.setBitForButton(btnId, ~~event.isActive)}
+
+      // onTouchStart={() => this.setBitForButton(btnId, 1)}
+      // onTouchEnd={() => this.setBitForButton(btnId, 0)}
     />
   );
 
@@ -247,6 +250,7 @@ class ControllerComponent extends Component {
           }]}
           {...this.state.panResponder.panHandlers}
         >
+          <View style={styles.joystickHandleGloss} />
         </View>
       </View>
     </View>
@@ -259,20 +263,20 @@ class ControllerComponent extends Component {
   render() {
     return (
       <SafeAreaView style={styles.container}>
-        {this.renderJoystick()}
-        <View 
+        <MultiTouchComponent style={styles.multiTouch}>
+          {this.renderJoystick()}
+          <View style={styles.centerImageContainer}>
+            <Image 
+              style={styles.centerImage} 
+              resizeMode='contain'
+              source={require('images/rrf-tall-full-color.png')}
+            />
+          </View>
 
-        style={styles.centerImageContainer}>
-          <Image 
-            style={styles.centerImage} 
-            resizeMode='contain'
-            source={require('images/rrf-tall-full-color.png')}
-          />
-        </View>
-
-        {this.renderButtons()}
-        {this.renderAssignList()}
-        {this.renderSyncDialog()}
+          {this.renderButtons()}
+          {this.renderAssignList()}
+          {this.renderSyncDialog()}
+        </MultiTouchComponent>
       </SafeAreaView>
     );
   }
