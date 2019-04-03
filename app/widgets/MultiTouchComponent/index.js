@@ -1,9 +1,6 @@
 import React, { Component } from 'react';
-import { 
-  View, 
-  PanResponder,
-  findNodeHandle
-} from 'react-native';
+import { View, findNodeHandle } from 'react-native';
+import ArrayUtils from 'utilities/ArrayUtils';
 
 const RCTUIManager = require('NativeModules').UIManager;
 
@@ -13,8 +10,6 @@ export default class MultiTouchComponent extends Component {
     super(props);
 
     this.onStartShouldSetResponder = this.onStartShouldSetResponder.bind(this);
-    //this.onResponderRelease = this.onResponderRelease.bind(this);
-
     this.onTouchMove = this.onTouchMove.bind(this);
     this.onTouchEnd = this.onTouchEnd.bind(this);
 
@@ -39,7 +34,7 @@ export default class MultiTouchComponent extends Component {
     }
 
     return false;
-  }
+  };
 
   onTouchMove = event => {
     const movedCoordinates = {
@@ -48,29 +43,39 @@ export default class MultiTouchComponent extends Component {
     };
 
     const movedInComponent = this.state.componentFrames.find(item => (
-      this.isInsideFrame(movedCoordinates, item.frame, 10)
+      this.isInsideFrame(movedCoordinates, item.frame, 20)
     ));
 
     if (movedInComponent) {
       return;
     }
 
-    const cancelledTouch = this.state.activeTouches.find(touch => (
-      touch.id === event.nativeEvent.identifier
+    const cancelledTouch = this.state.activeTouches.find(item => (
+      ArrayUtils.none(event.nativeEvent.touches.map(touch => {
+        const touchLocation = {
+          x: touch.pageX,
+          y: touch.pageY
+        };
+
+        return this.isInsideFrame(touchLocation, item.component.frame, 20);
+      }))
     ));
 
     if (cancelledTouch) {
       this.setState({
         activeTouches: this.state.activeTouches.filter(touch => (
-          touch.id !== cancelledTouch.id
+          touch.component !== cancelledTouch.component
         ))
-      }, () => {
-        setTimeout(() => cancelledTouch.handler({ isActive: false }), 0);
-      });
+      }, cancelledTouch.component.handler({ isActive: false }));
     }
-  }
+  };
 
   onTouchEnd = event => {
+    if (!event.nativeEvent.touches.length) {
+      this.emptyTouches();
+      return;
+    }
+
     const releasedCoordinates = {
       x: event.nativeEvent.pageX,
       y: event.nativeEvent.pageY
@@ -85,11 +90,9 @@ export default class MultiTouchComponent extends Component {
         activeTouches: this.state.activeTouches.filter(touch => (
           touch.component !== releasedComponent
         ))
-      }, () => {
-        setTimeout(() => releasedComponent.handler({ isActive: false }), 0);
-      });
+      }, releasedComponent.handler({ isActive: false }));
     }
-  }
+  };
 
   addTouch = (touchedComponent, eventId) => {
     this.setState({
@@ -97,21 +100,30 @@ export default class MultiTouchComponent extends Component {
         ...this.state.activeTouches,
         { 
           id: eventId,
-          handler: touchedComponent.handler
+          component: touchedComponent
         }
       ]
-    }, () => {
-      setTimeout(() => touchedComponent.handler({ isActive: true }), 0);
-    });
-  }
+    }, touchedComponent.handler({ isActive: true }));
+  };
 
-  isInsideFrame = (touch, view, tolerance) => [
-    touch.x >= view.x - tolerance,
-    touch.y >= view.y - tolerance,
-    touch.x < view.x + view.width + tolerance,
-    touch.y < view.y + view.height + tolerance
-  ]
-  .every(condition => condition);
+  emptyTouches = () => {
+    const remainingTouches = [...this.state.activeTouches];
+
+    this.setState({
+      activeTouches: []
+    });
+
+    remainingTouches.forEach(touch => {
+      touch.component.handler({ isActive: false })
+    });
+  };
+
+  isInsideFrame = (touch, frame, tolerance) => ArrayUtils.all([
+    touch.x >= frame.x - tolerance,
+    touch.y >= frame.y - tolerance,
+    touch.x < frame.x + frame.width + tolerance,
+    touch.y < frame.y + frame.height + tolerance
+  ]);
 
   mapChildren = (children, callback) => children.map(child => {
     if (!React.isValidElement(child)) {
@@ -126,17 +138,14 @@ export default class MultiTouchComponent extends Component {
   });
 
   addTouchable = (event, childProps) => {
-    RCTUIManager.measure(findNodeHandle(event.nativeEvent.target), (fx, fy, width, height, px, py) => {
+    const nodeHandle = findNodeHandle(event.nativeEvent.target);
+    RCTUIManager.measure(nodeHandle, (fx, fy, width, height, px, py) => {
       console.log(childProps.style.borderWidth);
 
       this.setState({
         componentFrames: [
           ...this.state.componentFrames,
           {
-            touchLocation: {
-              x: null,
-              y: null
-            },
             frame: { x: px, y: py, width: width, height: height },
             handler: childProps.onMultiTouch
           }
