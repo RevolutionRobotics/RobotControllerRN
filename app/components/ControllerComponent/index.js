@@ -6,6 +6,7 @@ import {
   Text,
   Image,
   Modal,
+  Platform,
   ActivityIndicator,
   PanResponder
 } from 'react-native';
@@ -193,15 +194,25 @@ class ControllerComponent extends Component {
     }
   };
 
-  renderButton = btnId => (
-    <View
-      style={[styles.btnProgrammable, { opacity: this.opacityForButton(btnId) }]}
-      onMultiTouch={event => this.setBitForButton(btnId, ~~event.isActive)}
+  renderButton = btnId => {
+    const inputProps = Platform.OS === 'ios'
+      ? {
+        onTouchStart: () => this.setBitForButton(btnId, 1),
+        onTouchEnd: () => this.setBitForButton(btnId, 0)
+      }
+      : {
+        onMultiTouch: event => this.setBitForButton(btnId, ~~event.isActive)
+      };
 
-      // onTouchStart={() => this.setBitForButton(btnId, 1)}
-      // onTouchEnd={() => this.setBitForButton(btnId, 0)}
-    />
-  );
+    return (
+      <View
+        style={[styles.btnProgrammable, { 
+          opacity: this.opacityForButton(btnId) 
+        }]}
+        {...inputProps}
+      />
+    );
+  }
 
   opacityForButton = btnId => (
     ((this.state.buttonsInput >> btnId) & 1) ? .2 : 1

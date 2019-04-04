@@ -1,5 +1,9 @@
 import React, { Component } from 'react';
-import { View, findNodeHandle } from 'react-native';
+import { 
+  View,
+  Platform,
+  findNodeHandle
+} from 'react-native';
 import ArrayUtils from 'utilities/ArrayUtils';
 
 const RCTUIManager = require('NativeModules').UIManager;
@@ -155,6 +159,10 @@ export default class MultiTouchComponent extends Component {
   };
 
   render() {
+    if (Platform.OS === 'ios') {
+      return <View {...this.props} />;
+    }
+
     let childIndex = 0;
     return (
       <View
