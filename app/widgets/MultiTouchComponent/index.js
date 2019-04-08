@@ -1,12 +1,6 @@
 import React, { Component } from 'react';
-import { 
-  View,
-  Platform,
-  findNodeHandle
-} from 'react-native';
+import { View } from 'react-native';
 import ArrayUtils from 'utilities/ArrayUtils';
-
-const RCTUIManager = require('NativeModules').UIManager;
 
 export default class MultiTouchComponent extends Component {
 
@@ -66,11 +60,12 @@ export default class MultiTouchComponent extends Component {
     ));
 
     if (cancelledTouch) {
+      cancelledTouch.component.handler({ isActive: false });
       this.setState({
         activeTouches: this.state.activeTouches.filter(touch => (
           touch.component !== cancelledTouch.component
         ))
-      }, cancelledTouch.component.handler({ isActive: false }));
+      });
     }
   };
 
@@ -90,15 +85,17 @@ export default class MultiTouchComponent extends Component {
     ));
 
     if (releasedComponent) {
+      releasedComponent.handler({ isActive: false });
       this.setState({
         activeTouches: this.state.activeTouches.filter(touch => (
           touch.component !== releasedComponent
         ))
-      }, releasedComponent.handler({ isActive: false }));
+      });
     }
   };
 
   addTouch = (touchedComponent, eventId) => {
+    touchedComponent.handler({ isActive: true });
     this.setState({
       activeTouches: [
         ...this.state.activeTouches,
@@ -107,7 +104,7 @@ export default class MultiTouchComponent extends Component {
           component: touchedComponent
         }
       ]
-    }, touchedComponent.handler({ isActive: true }));
+    });
   };
 
   emptyTouches = () => {
@@ -141,28 +138,33 @@ export default class MultiTouchComponent extends Component {
     return callback(child, childrenProps);
   });
 
-  addTouchable = (event, childProps) => {
-    const nodeHandle = findNodeHandle(event.nativeEvent.target);
-    RCTUIManager.measure(nodeHandle, (fx, fy, width, height, px, py) => {
-      console.log(childProps.style.borderWidth);
-
-      this.setState({
-        componentFrames: [
-          ...this.state.componentFrames,
-          {
-            frame: { x: px, y: py, width: width, height: height },
-            handler: childProps.onMultiTouch
-          }
-        ]
-      });
-    });
+  addTouchable = (key, childProps) => {
+    this[key].measure((fx, fy, width, height, px, py) => this.setState({
+      componentFrames: [
+        ...this.state.componentFrames,
+        {
+          frame: { x: px, y: py, width: width, height: height },
+          handler: childProps.onMultiTouch
+        }
+      ]
+    }));
   };
 
-  render() {
-    if (Platform.OS === 'ios') {
-      return <View {...this.props} />;
-    }
+  cloneChild = (key, child, childrenProps) => React.cloneElement(child, {
+    ...childrenProps,
+    ...(child.props.onMultiTouch
+      ? {
+        ref: view => {
+          child.ref && child.ref(view);
+          this[key] = view;
+        },
+        onLayout: event => this.addTouchable(key, child.props)
+      }
+      : {}),
+    key: child.props.key || key
+  });
 
+  render() {
     let childIndex = 0;
     return (
       <View
@@ -176,15 +178,8 @@ export default class MultiTouchComponent extends Component {
             return child;
           }
 
-          const onLayoutProps = child.props.onMultiTouch 
-            ? { onLayout: event => this.addTouchable(event, child.props) }
-            : {};
-
-          return React.cloneElement(child, {
-            ...childrenProps,
-            ...onLayoutProps,
-            key: child.props.key || `touchable-${childIndex++}`
-          });
+          const key = `touchable-${childIndex++}`;
+          return this.cloneChild(key, child, childrenProps);
         })}
       </View>
     );
