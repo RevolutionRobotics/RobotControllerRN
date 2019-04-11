@@ -15,7 +15,7 @@ import HeaderButtons, { HeaderButton, Item } from 'react-navigation-header-butto
 import AlertUtils from 'utilities/AlertUtils';
 import DataSync from 'utilities/DataSync';
 import { connect } from 'react-redux';
-import { controllerStyle as styles } from 'components/styles';
+import styles from './styles';
 
 const MaterialHeaderButton = props => (
   <HeaderButton {...props} IconComponent={MaterialIcons} iconSize={23} color="white" />

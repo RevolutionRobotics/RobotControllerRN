@@ -10,7 +10,7 @@ import BlocklyComponent from 'components/BlocklyComponent';
 import RobotConfigComponent from 'components/RobotConfigComponent';
 import CodeViewComponent from 'components/CodeViewComponent';
 
-import { navigatorStyle as styles } from 'components/styles';
+import styles from './styles';
 
 import * as blocklyAction from 'actions/BlocklyAction';
 import * as configAction from 'actions/RobotConfigAction';

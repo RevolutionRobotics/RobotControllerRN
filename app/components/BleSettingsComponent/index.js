@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-navigation';
 import { connect } from 'react-redux';
-import { bleStyle as styles } from 'components/styles';
+import styles from './styles';
 import { name as appName } from 'app.json';
 import * as action from 'actions/BleAction';
 

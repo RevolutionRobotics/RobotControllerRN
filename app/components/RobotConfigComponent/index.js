@@ -12,7 +12,7 @@ import RNPickerSelect from 'react-native-picker-select';
 import KeyboardAwareSectionList from 'widgets/KeyboardAwareSectionList';
 import ArrayUtils from 'utilities/ArrayUtils';
 import * as action from 'actions/RobotConfigAction';
-import { robotConfigStyle as styles } from 'components/styles';
+import styles from './styles';
 
 class RobotConfigComponent extends Component {
 

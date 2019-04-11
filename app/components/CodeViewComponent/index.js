@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { SafeAreaView } from 'react-native';
 import SyntaxHighlighter from 'react-native-syntax-highlighter';
-import { codeViewStyle as styles } from 'components/styles';
+import styles from './styles';
 
 export default class CodeViewComponent extends Component {
 

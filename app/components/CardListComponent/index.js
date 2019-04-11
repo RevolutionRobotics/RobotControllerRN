@@ -8,7 +8,7 @@ import {
 import { connect } from 'react-redux';
 import { BleManager } from 'react-native-ble-plx';
 import { SafeAreaView } from 'react-navigation';
-import { cardListStyle as styles } from 'components/styles';
+import styles from './styles';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import HeaderButtons, { HeaderButton, Item } from 'react-navigation-header-buttons';

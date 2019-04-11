@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { connect } from 'react-redux';
-import { blocklyStyle as styles } from 'components/styles';
+import styles from './styles';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import HeaderButtons, { HeaderButton, Item } from 'react-navigation-header-buttons';
 import AlertUtils from 'utilities/AlertUtils';
