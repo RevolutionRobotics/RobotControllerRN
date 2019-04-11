@@ -14,6 +14,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import HeaderButtons, { HeaderButton, Item } from 'react-navigation-header-buttons';
 import AlertUtils from 'utilities/AlertUtils';
 import DataSync from 'utilities/DataSync';
+import ListSelectionDialog from 'widgets/ListSelectionDialog';
 import { connect } from 'react-redux';
 import styles from './styles';
 
@@ -42,6 +43,7 @@ class ControllerComponent extends Component {
     this.joystickSize = 180;
     this.state = {
       isSyncing: false,
+      assignDialogVisible: false,
       counter: 0,
       sendTimer: null,
       settingsMode: false,
@@ -83,6 +85,19 @@ class ControllerComponent extends Component {
   }
 
   componentDidMount() {
+    this.syncData();
+    this.props.navigation.setParams({
+      settingsPressed: this.settingsPressedHandler
+    });
+  }
+
+  componentWillUnmount() {
+    if (this.state.sendTimer) {
+      clearInterval(this.state.sendTimer);
+    }
+  }
+
+  syncData = () => {
     if (this.props.uartCharacteristic) {
       this.setState({
         isSyncing: true
@@ -98,17 +113,7 @@ class ControllerComponent extends Component {
         });
       }));
     }
-
-    this.props.navigation.setParams({
-      settingsPressed: this.settingsPressedHandler
-    });
-  }
-
-  componentWillUnmount() {
-    if (this.state.sendTimer) {
-      clearInterval(this.state.sendTimer);
-    }
-  }
+  };
 
   renderSyncDialog = () => (
     <Modal
@@ -146,6 +151,12 @@ class ControllerComponent extends Component {
     this.setState({
       settingsMode: !this.state.settingsMode
     }, () => {
+      if (this.state.settingsMode && this.state.sendTimer) {
+        clearInterval(this.state.sendTimer);
+      } else if (this.props.uartCharacteristic) {
+        this.syncData();
+      }
+
       this.props.navigation.setParams({
         settingsIcon: this.state.settingsMode ? 'check' : 'settings'
       });
@@ -196,7 +207,13 @@ class ControllerComponent extends Component {
     <View
       style={[styles.btnProgrammable, { opacity: this.opacityForButton(btnId) }]}
       onTouchStart={() => this.setBitForButton(btnId, 1)}
-      onTouchEnd={() => this.setBitForButton(btnId, 0)}
+      onTouchEnd={() => {
+        this.setBitForButton(btnId, 0);
+
+        if (this.state.settingsMode) {
+          this.setState({ assignListVisible: true });
+        }
+      }}
     />
   );
 
@@ -252,8 +269,17 @@ class ControllerComponent extends Component {
     </View>
   );
 
-  renderAssignList = () => (
-    <View />
+  renderAssignList = btnId => (
+    <ListSelectionDialog
+      dialogTitle={'Assign code'}
+      listItems={this.props.savedList}
+      onItemSelected={item => {
+        this.setState({ assignListVisible: false });
+        console.log(`${btnId}: ${item.name}`)}
+      }
+      visible={this.state.assignListVisible}
+      onRequestClose={() => this.setState({ assignListVisible: false })}
+    />
   );
 
   render() {

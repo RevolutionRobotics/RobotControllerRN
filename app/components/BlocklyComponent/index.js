@@ -17,6 +17,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import HeaderButtons, { HeaderButton, Item } from 'react-navigation-header-buttons';
 import AlertUtils from 'utilities/AlertUtils';
 import * as action from 'actions/BlocklyAction';
+import ListSelectionDialog from 'widgets/ListSelectionDialog';
 
 const debugMode = false;
 const MaterialHeaderButton = props => (
@@ -224,54 +225,21 @@ class BlocklyComponent extends Component {
   );
 
   renderOpenDialog = () => (
-    <Modal
-      animationType='fade'
-      transparent={true}
+    <ListSelectionDialog
+      dialogTitle={'Open code'}
+      listItems={this.props.savedList}
       visible={this.state.openDialogVisible}
+      onItemSelected={item => {
+        this.setState({ 
+          currentName: item.name,
+          openDialogVisible: false
+        }, () => {
+          WebViewRef && WebViewRef.postMessage(item.xmlData);
+        });
+      }}
       onRequestClose={() => this.setState({ openDialogVisible: false })}
-      supportedOrientations={['portrait', 'landscape']}
-    >
-      <View style={styles.dialogBackdrop}>
-        <View style={styles.openDialogContainer}>
-          <Text style={styles.dialogTitle}>Open code</Text>
-          <View style={styles.openDialogListContainer}>
-            <FlatList
-              contentContainerStyle={{ paddingVertical: 20 }}
-              data={this.props.savedList}
-              renderItem={this.renderOpenDialogItem}
-              removeClippedSubviews={true}
-              keyExtractor={(item, index) => item.name}
-            />
-          </View>
-          <View style={styles.dialogButtonContainer}>
-            <TouchableOpacity 
-              style={styles.dialogButton} 
-              onPress={() => this.setState({ openDialogVisible: false })}
-            >
-              <Text style={styles.dialogButtonLabel}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </Modal>
+    />
   );
-
-  renderOpenDialogItem = ({item, index}) => {
-    return (
-      <TouchableOpacity style={styles.openDialogItem}
-        onPress={() => {
-          this.setState({ 
-            currentName: item.name,
-            openDialogVisible: false
-          }, () => {
-            WebViewRef && WebViewRef.postMessage(item.xmlData);
-          });
-        }}
-      >
-        <Text style={{ textAlign: 'center', color: 'white' }}>{item.name}</Text>
-      </TouchableOpacity>
-    );
-  };
 
   render() {
     const debugPath = 'http://localhost:8083/index.html';

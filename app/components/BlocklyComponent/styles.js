@@ -37,24 +37,6 @@ export default StyleSheet.create({
     ...dialogStyle.dialogContainer,
     ...dialogStyle.blocklyDialog
   },
-  openDialogContainer: {
-    width: 300,
-    height: 300,
-    ...dialogStyle.dialogContainer,
-    ...dialogStyle.blocklyDialog
-  },
-  openDialogListContainer: { 
-    width: '100%', 
-    height: 180, 
-    flexDirection: 'row', 
-    alignItems: 'center',
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#cacaca'
-  },
-  openDialogItem: {
-    padding: 15,
-  },
   dialogTitle: defaultValues.dialogTitle,
   dialogInput: {
     width: '100%',
