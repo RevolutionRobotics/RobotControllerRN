@@ -12,17 +12,19 @@ export default class DataSync {
 
     const savedConfig = props.savedConfig;
     const assignments = props.buttonAssignments;
-    const blocklies = props.savedList.filter(blockly => (
-      assignments.some(assignment => assignment.blocklyName === blockly.name)
-    ));
+    const blocklies = props.savedList
+      .filter(blockly => (
+        assignments.some(assignment => assignment.blocklyName === blockly.name)
+      ))
+      .map(blockly => ({
+        name: blockly.name || '',
+        pythonCode: blockly.pythonCode || ''
+      }));
 
     const byteArray = encodeURIComponent(JSON.stringify({
       robotConfig: savedConfig,
       assignments: assignments,
-      blocklyList: blocklies.map(blockly => ({
-        name: blockly.name || '',
-        pythonCode: blockly.pythonCode || ''
-      })),
+      blocklyList: blocklies
     })).split('').map(c => c.charCodeAt());
 
     try {

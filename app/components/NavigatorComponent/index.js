@@ -46,14 +46,11 @@ class NavigatorComponent extends Component {
   constructor(props) {
     super(props);
     
-    cachedData.forEach(item => {
-      AsyncStorage.getItem(item.key)
-        .then(data => {
-          if (data) {
-            this.props[item.action](JSON.parse(data));
-          }
-        });
-    });
+    cachedData.forEach(item => AsyncStorage.getItem(item.key).then(data => {
+      if (data) {
+        this.props[item.action](JSON.parse(data));
+      }
+    }));
   }
 
   render() {
