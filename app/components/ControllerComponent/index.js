@@ -17,6 +17,7 @@ import DataSync from 'utilities/DataSync';
 import ListSelectionDialog from 'widgets/ListSelectionDialog';
 import { connect } from 'react-redux';
 import styles from './styles';
+import * as action from 'actions/AssignmentAction';
 
 const MaterialHeaderButton = props => (
   <HeaderButton {...props} IconComponent={MaterialIcons} iconSize={23} color="white" />
@@ -42,12 +43,13 @@ class ControllerComponent extends Component {
 
     this.joystickSize = 180;
     this.state = {
+      layoutId: 0,
       isSyncing: false,
       assignDialogVisible: false,
       counter: 0,
       sendTimer: null,
       settingsMode: false,
-      assignListVisible: false,
+      assigningButton: null,
       joystickX: 0,
       joystickY: 0,
       joystickR: 0,
@@ -198,24 +200,22 @@ class ControllerComponent extends Component {
           'There are no Blockly scripts saved yet.'
         );
       } else {
-        this.setState({ assignListVisible: true });
+        this.setState({ assigningButton: btnId });
       }
     }
   };
 
-  renderButton = btnId => (
-    <View
+  renderButton = btnId => this.state.settingsMode
+    ? (<TouchableOpacity 
+      style={styles.btnProgrammable} 
+      onPress={() => this.buttonPressed(btnId)}
+      onLongPress={() => this.promptUnassign(btnId)}
+    />)
+    : (<View
       style={[styles.btnProgrammable, { opacity: this.opacityForButton(btnId) }]}
       onTouchStart={() => this.setBitForButton(btnId, 1)}
-      onTouchEnd={() => {
-        this.setBitForButton(btnId, 0);
-
-        if (this.state.settingsMode) {
-          this.setState({ assignListVisible: true });
-        }
-      }}
-    />
-  );
+      onTouchEnd={() => this.setBitForButton(btnId, 0)}
+    />);
 
   opacityForButton = btnId => (
     ((this.state.buttonsInput >> btnId) & 1) ? .2 : 1
@@ -269,18 +269,41 @@ class ControllerComponent extends Component {
     </View>
   );
 
-  renderAssignList = btnId => (
+  renderAssignList = () => (
     <ListSelectionDialog
       dialogTitle={'Assign code'}
       listItems={this.props.savedList}
       onItemSelected={item => {
-        this.setState({ assignListVisible: false });
-        console.log(`${btnId}: ${item.name}`)}
-      }
-      visible={this.state.assignListVisible}
-      onRequestClose={() => this.setState({ assignListVisible: false })}
+        const btnId = this.state.assigningButton;
+
+        this.props.addButtonAssignment(this.state.layoutId, btnId, item.name);
+        this.setState({ assigningButton: null });
+      }}
+      visible={this.state.assigningButton !== null}
+      onRequestClose={() => this.setState({ assigningButton: null })}
     />
   );
+
+  promptUnassign = btnId => {
+    const selectedBlockly = this.props.buttonAssignments.find(item => (
+      item.layoutId === this.state.layoutId && item.btnId === btnId
+    ));
+
+    if (!selectedBlockly) {
+      AlertUtils.showError(
+        'Button unassigned', 
+        'There\'s no code assigned for this button'
+      );
+
+      return;
+    }
+
+    AlertUtils.prompt(
+      'Unassign button', 
+      `Do you want to unassign button for "${selectedBlockly.blocklyName}"?`,
+      () => this.props.removeButtonAssignment(this.state.layoutId, btnId)
+    );
+  }
 
   render() {
     return (
@@ -307,11 +330,13 @@ class ControllerComponent extends Component {
 const mapStateToProps = state => ({
   uartCharacteristic: state.BleReducer.get('uartCharacteristic'),
   savedConfig: state.RobotConfigReducer.get('savedConfig'),
-  savedList: state.BlocklyReducer.get('savedList')
+  savedList: state.BlocklyReducer.get('savedList'),
+  buttonAssignments: state.ButtonAssignmentReducer.get('assignments')
 });
 
 const mapDispatchToProps = dispatch => ({
-  // TODO: Implement mapping... 
+  addButtonAssignment: (layoutId, btnId, blocklyName) => dispatch(action.addButtonAssignment(layoutId, btnId, blocklyName)),
+  removeButtonAssignment: (layoutId, btnId) => dispatch(action.removeButtonAssignment(layoutId, btnId))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ControllerComponent);

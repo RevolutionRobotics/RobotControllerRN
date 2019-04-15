@@ -50,7 +50,9 @@ export default class ListSelectionDialog extends Component {
         <View style={styles.listDialogBackdrop}>
           <View style={styles.listDialogContainer}>
             <View style={styles.listDialogTitleContainer}>
-              <Text style={styles.listDialogTitle}>{this.props.dialogTitle}</Text>
+              <Text style={styles.listDialogTitle}>
+                {this.props.dialogTitle}
+              </Text>
               <TouchableOpacity 
                 style={styles.listDialogButton} 
                 onPress={this.props.onRequestClose}

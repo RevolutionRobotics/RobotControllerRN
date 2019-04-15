@@ -10,12 +10,19 @@ export default class DataSync {
       return;
     }
 
-    const savedList = props.savedList.map(item => (item.pythonCode || ''));
     const savedConfig = props.savedConfig;
+    const assignments = props.buttonAssignments;
+    const blocklies = props.savedList.filter(blockly => (
+      assignments.some(assignment => assignment.blocklyName === blockly.name)
+    ));
 
     const byteArray = encodeURIComponent(JSON.stringify({
-      blocklyList: savedList,
-      robotConfig: savedConfig
+      robotConfig: savedConfig,
+      assignments: assignments,
+      blocklyList: blocklies.map(blockly => ({
+        name: blockly.name || '',
+        pythonCode: blockly.pythonCode || ''
+      })),
     })).split('').map(c => c.charCodeAt());
 
     try {
@@ -31,7 +38,7 @@ export default class DataSync {
 
     const packetArray = new Uint8Array([
       0xfe,
-      (lastByte >= array.length) | 0,
+      ~~(lastByte >= array.length),
       ...(array.slice(firstByte, lastByte))
     ]);
 
