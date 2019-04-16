@@ -14,6 +14,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import HeaderButtons, { HeaderButton, Item } from 'react-navigation-header-buttons';
 import AlertUtils from 'utilities/AlertUtils';
 import DataSync from 'utilities/DataSync';
+import AppConfig from 'utilities/AppConfig';
 import ListSelectionDialog from 'widgets/ListSelectionDialog';
 import { connect } from 'react-redux';
 import styles from './styles';
@@ -43,6 +44,7 @@ class ControllerComponent extends Component {
 
     this.joystickSize = 180;
     this.state = {
+      liveMessageCharacteristics: {},
       layoutId: 0,
       isSyncing: false,
       assignDialogVisible: false,
@@ -87,6 +89,27 @@ class ControllerComponent extends Component {
   }
 
   componentDidMount() {
+    const liveMessageService = this.props.robotServices.find(item => (
+      item.uuid === AppConfig.services.liveMessage.id
+    ));
+
+    if (liveMessageService) {
+      liveMessageService.characteristics()
+        .then(characteristics => {
+          const joystickCharacteristic = this.findCharacteristic('updateDirection');
+          const buttonCharacteristic = this.findCharacteristic('startStoredProgram');
+          const counterCharacteristic = this.findCharacteristic('keepAlive');
+
+          this.setState({
+            liveMessageCharacteristics: {
+              joystick: joystickCharacteristic,
+              button: buttonCharacteristic,
+              counter: counterCharacteristic
+            }
+          });
+        });
+    }
+
     this.syncData();
     this.props.navigation.setParams({
       settingsPressed: this.settingsPressedHandler
@@ -99,8 +122,12 @@ class ControllerComponent extends Component {
     }
   }
 
+  findCharacteristic = id => {
+    return AppConfig.findCharacteristic('liveMessage', id);
+  };
+
   syncData = () => {
-    if (this.props.uartCharacteristic) {
+    if (this.props.robotServices) {
       this.setState({
         isSyncing: true
       }, () => DataSync.sync(this.props, error => {
@@ -114,6 +141,8 @@ class ControllerComponent extends Component {
           isSyncing: false 
         });
       }));
+    } else {
+      this.setState({ isSyncing: false });
     }
   };
 
@@ -155,7 +184,7 @@ class ControllerComponent extends Component {
     }, () => {
       if (this.state.settingsMode && this.state.sendTimer) {
         clearInterval(this.state.sendTimer);
-      } else if (this.props.uartCharacteristic) {
+      } else if (this.props.robotServices) {
         this.syncData();
       }
 
@@ -328,7 +357,7 @@ class ControllerComponent extends Component {
 }
 
 const mapStateToProps = state => ({
-  uartCharacteristic: state.BleReducer.get('uartCharacteristic'),
+  robotServices: state.BleReducer.get('robotServices'),
   savedConfig: state.RobotConfigReducer.get('savedConfig'),
   savedList: state.BlocklyReducer.get('savedList'),
   buttonAssignments: state.ButtonAssignmentReducer.get('assignments')

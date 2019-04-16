@@ -1,12 +1,16 @@
 import base64 from 'base64-js';
+import AppConfig from 'utilities/AppConfig';
 
 export default class DataSync {
 
   static packetSize = 512;
 
   static sync = (props, callback) => {
-    const uartCharacteristic = props.uartCharacteristic;
-    if (!uartCharacteristic) {
+    const longMessageService = props.robotServices.find(item => (
+      item.uuid === AppConfig.services.longMessage.id
+    ));
+
+    if (!longMessageService) {
       return;
     }
 
@@ -17,18 +21,53 @@ export default class DataSync {
         assignments.some(assignment => assignment.blocklyName === blockly.name)
       ))
       .map(blockly => ({
-        name: blockly.name || '',
-        pythonCode: blockly.pythonCode || ''
+        //name: blockly.name || '',
+        pythonCode: blockly.pythonCode || '',
+        assignments: assignments
+          .filter(assignment => assignment.blocklyName === blockly.name)
+          .map(assignment => ({ 
+            layoutId: assignment.layoutId,
+            btnId: assignment.btnId
+          }))
       }));
 
-    const byteArray = encodeURIComponent(JSON.stringify({
-      robotConfig: savedConfig,
-      assignments: assignments,
-      blocklyList: blocklies
-    })).split('').map(c => c.charCodeAt());
+    // const byteArray = encodeURIComponent(JSON.stringify({
+    //   robotConfig: savedConfig,
+    //   assignments: assignments,
+    //   blocklyList: blocklies
+    // })).split('').map(c => c.charCodeAt());
+
+    const configByteArray = encodeURIComponent(JSON.stringify(savedConfig))
+      .split('')
+      .map(c => c.charCodeAt());
+
+    const blocklyByteArray = encodeURIComponent(JSON.stringify(blocklies))
+      .split('')
+      .map(c => c.charCodeAt());
 
     try {
-      DataSync.sendPacket(uartCharacteristic, byteArray, 0, callback);
+      longMessageService.characteristics()
+        .then(characteristics => {
+          const sendConfigCharacteristic = AppConfig.findCharacteristic('longMessage', 'sendConfiguration');
+          const sendProgramCharacteristic = AppConfig.findCharacteristic('longMessage', 'sendProgram');
+
+          if (sendConfigCharacteristic && sendProgramCharacteristic) {
+            const configCallback = error => {
+              if (error) {
+                callback(error);
+                return;
+              }
+
+              DataSync.sendPacket(sendProgramCharacteristic, blocklyByteArray, 0, callback);
+             }
+
+            DataSync.sendPacket(sendConfigCharacteristic, configByteArray, 0, configCallback);
+          } else {
+            callback();
+          }
+        });
+
+      //DataSync.sendPacket(uartCharacteristic, byteArray, 0, callback);
     } catch (e) {
       console.warn(e.message);
     }
