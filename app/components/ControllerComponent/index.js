@@ -298,9 +298,9 @@ class ControllerComponent extends Component {
       return;
     }
 
-    AlertUtils.prompt(
-      'Unassign button', 
-      `Do you want to unassign button for "${selectedBlockly.blocklyName}"?`,
+    AlertUtils.promptDelete(
+      selectedBlockly.blocklyName, 
+      `Do you want to unassign blockly for this button?`,
       () => this.props.removeButtonAssignment(this.state.layoutId, btnId)
     );
   }
