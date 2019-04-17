@@ -31,8 +31,6 @@ class BleSettingsComponent extends Component {
     this.state = {
       device: null,
       connectingDialogVisible: false,
-      // uartServiceId: '0000ffe0-0000-1000-8000-00805f9b34fb',
-      // uartCharacteristicId: '0000ffe1-0000-1000-8000-00805f9b34fb',
       foundDevices: []
     }
   }
@@ -184,14 +182,9 @@ class BleSettingsComponent extends Component {
     });
   };
 
-  isRobotService = services => {
-    const serviceIds = Object.keys(AppConfig.services).map(key => (
-      AppConfig.services[key].id
-    ));
-
-    const robotServices = services.filter(item => serviceIds.includes(item));
-    return robotServices.length === serviceIds.length
-  };
+  isRobotService = services => (
+    !!services?.some(item => item === AppConfig.services.liveMessage.id)
+  );
 
   connect = device => {
     // Stop scanning as it's not necessary if you are scanning for one device.
@@ -220,34 +213,6 @@ class BleSettingsComponent extends Component {
             } else {
               this.disconnect(device.id);
             }
-
-            // const uartService = services.find(item => (
-            //   item.uuid === this.state.uartServiceId
-            // ));
-
-            // if (uartService) {
-            //   uartService.characteristics()
-            //     .then(characteristics => {
-            //       const uartCharacteristic = characteristics.find(item => (
-            //         item.uuid === this.state.uartCharacteristicId
-            //       ));
-
-            //       if (uartCharacteristic) {
-            //         this.props.setUartCharacteristic(uartCharacteristic);
-            //         device.onDisconnected(() => {
-            //           this.props.setUartCharacteristic(null);
-            //         });
-
-            //         this.setState({ 
-            //           connectingDialogVisible: false 
-            //         }, this.props.navigation.goBack);
-            //       } else {
-            //         this.disconnect(device.id);
-            //       }
-            //     });
-            // } else {
-            //   this.disconnect(device.id);
-            // }
           });
       })
       .catch(error => {
@@ -265,7 +230,6 @@ const mapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => ({
   setRobotServices: services => dispatch(action.setRobotServices(services))
-  // setUartCharacteristic: characteristic => dispatch(action.setUartCharacteristic(characteristic))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(BleSettingsComponent);

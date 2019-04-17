@@ -16,12 +16,12 @@ export default class DataSync {
 
     const savedConfig = props.savedConfig;
     const assignments = props.buttonAssignments;
+
     const blocklies = props.savedList
       .filter(blockly => (
         assignments.some(assignment => assignment.blocklyName === blockly.name)
       ))
       .map(blockly => ({
-        //name: blockly.name || '',
         pythonCode: blockly.pythonCode || '',
         assignments: assignments
           .filter(assignment => assignment.blocklyName === blockly.name)
@@ -31,45 +31,26 @@ export default class DataSync {
           }))
       }));
 
-    // const byteArray = encodeURIComponent(JSON.stringify({
-    //   robotConfig: savedConfig,
-    //   assignments: assignments,
-    //   blocklyList: blocklies
-    // })).split('').map(c => c.charCodeAt());
-
-    const configByteArray = encodeURIComponent(JSON.stringify(savedConfig))
-      .split('')
-      .map(c => c.charCodeAt());
-
-    const blocklyByteArray = encodeURIComponent(JSON.stringify(blocklies))
-      .split('')
-      .map(c => c.charCodeAt());
+    const byteArray = encodeURIComponent(JSON.stringify({
+      robotConfig: savedConfig,
+      blocklyList: blocklies
+    })).split('').map(c => c.charCodeAt());
 
     try {
       longMessageService.characteristics()
         .then(characteristics => {
-          const sendConfigCharacteristic = AppConfig.findCharacteristic('longMessage', 'sendConfiguration');
-          const sendProgramCharacteristic = AppConfig.findCharacteristic('longMessage', 'sendProgram');
+          const sendConfigCharacteristic = AppConfig
+            .findCharacteristic(characteristics, 'longMessage', 'sendConfiguration');
 
-          if (sendConfigCharacteristic && sendProgramCharacteristic) {
-            const configCallback = error => {
-              if (error) {
-                callback(error);
-                return;
-              }
-
-              DataSync.sendPacket(sendProgramCharacteristic, blocklyByteArray, 0, callback);
-             }
-
-            DataSync.sendPacket(sendConfigCharacteristic, configByteArray, 0, configCallback);
+          if (sendConfigCharacteristic) {
+            DataSync.sendPacket(sendConfigCharacteristic, byteArray, 0, callback);
           } else {
             callback();
           }
         });
-
-      //DataSync.sendPacket(uartCharacteristic, byteArray, 0, callback);
     } catch (e) {
       console.warn(e.message);
+      callback(e);
     }
   };
 

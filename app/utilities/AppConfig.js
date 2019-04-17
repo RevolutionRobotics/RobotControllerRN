@@ -8,7 +8,6 @@ export default class AppConfig {
         updateFramework     : '97148e28-5b9d-11e9-8647-d663bd873d93',
         testKit             : '97148f90-5b9d-11e9-8647-d663bd873d93',
         sendConfiguration   : '971490c6-5b9d-11e9-8647-d663bd873d93',
-        sendProgram         : '971492d8-5b9d-11e9-8647-d663bd873d93',
         changeName          : '971495d0-5b9d-11e9-8647-d663bd873d93'
       }
     },
@@ -25,14 +24,13 @@ export default class AppConfig {
         readSensor2         : '36e944ef-34fe-4de2-9310-394d482e20e6',
         readSensor3         : 'b3a71566-9af2-4c9d-bc4a-6f754ab6fcf0',
         readSensor4         : '9ace575c-0b70-4ed5-96f1-979a8eadbc6b',
-        startStoredProgram  : '7486bec3-bb6b-4abd-a9ca-20adc281a0a4',
-        updateDirection     : '1e01230f-f5f3-4a94-aac8-d09cd48f8d79',
+        periodicController  : '7486bec3-bb6b-4abd-a9ca-20adc281a0a4',
         keepAlive           : '9e55ea41-69c3-4729-9f9a-90bc27ab6253'
       }
     }
   };
 
-  static findCharacteristic = (service, id) => list.find(item => (
+  static findCharacteristic = (list, service, id) => list.find(item => (
     item.uuid === AppConfig.services[service].characteristicIds[id]
   ));
 };
