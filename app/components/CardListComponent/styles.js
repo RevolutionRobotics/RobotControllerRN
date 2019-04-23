@@ -12,7 +12,7 @@ export default StyleSheet.create({
     alignSelf: 'center',
     justifyContent: 'center',
     alignItems: 'center',
-    width: 120,
+    width: 130,
     height: 180,
     backgroundColor: defaultValues.appBackground,
     padding: 10,

@@ -9,7 +9,7 @@
         "actions": "./app/actions",
         "reducers": "./app/reducers",
         "utilities": "./app/utilities",
-        "images": './assets/images'
+        "images": "./assets/images"
       }
     }]
   ]

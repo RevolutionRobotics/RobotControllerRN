@@ -13,7 +13,7 @@ import {
 import { SafeAreaView } from 'react-navigation';
 import { connect } from 'react-redux';
 import styles from './styles';
-import { name as appName } from 'app.json';
+import { name as appName } from '../../../app.json';
 import * as action from 'actions/BleAction';
 
 class BleSettingsComponent extends Component {
