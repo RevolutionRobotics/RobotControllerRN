@@ -9,6 +9,7 @@ import { connect } from 'react-redux';
 import { BleManager } from 'react-native-ble-plx';
 import { SafeAreaView } from 'react-navigation';
 import styles from './styles';
+import AppConfig from 'utilities/AppConfig';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import HeaderButtons, { HeaderButton, Item } from 'react-navigation-header-buttons';
@@ -67,11 +68,11 @@ class CardListComponent extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.uartCharacteristic === nextProps.uartCharacteristic) {
+    if (this.props.robotServices === nextProps.robotServices) {
       return;
     }
 
-    const bleIcon = (nextProps.uartCharacteristic) 
+    const bleIcon = (nextProps.robotServices) 
       ? 'bluetooth-connected' 
       : 'bluetooth';
 
@@ -94,7 +95,7 @@ class CardListComponent extends Component {
   }
 
   isConnected = () => {
-    if (!this.props.uartCharacteristic) {
+    if (!this.props.robotServices) {
       return false;
     }
     
@@ -112,8 +113,13 @@ class CardListComponent extends Component {
   };
 
   disconnect = () => {
-    this.state.bleManager
-      .cancelDeviceConnection(this.props.uartCharacteristic.deviceID);
+    const liveMessageService = this.props.robotServices.find(item => (
+      item.uuid === AppConfig.services.liveMessage.id
+    ));
+
+    if (liveMessageService) {
+      this.state.bleManager.cancelDeviceConnection(liveMessageService.deviceID);
+    }
   };
 
   renderItem = ({item, index}) => {
@@ -143,7 +149,7 @@ class CardListComponent extends Component {
 }
 
 const mapStateToProps = state => ({
-  uartCharacteristic: state.BleReducer.get('uartCharacteristic')
+  robotServices: state.BleReducer.get('robotServices')
 });
 
 const mapDispatchToProps = dispatch => ({

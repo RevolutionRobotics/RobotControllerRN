@@ -11,16 +11,25 @@ import {
 } from 'react-native';
 import base64 from 'base64-js';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import HeaderButtons, { HeaderButton, Item } from 'react-navigation-header-buttons';
+import HeaderButtons, { 
+  HeaderButton, 
+  Item 
+} from 'react-navigation-header-buttons';
 import AlertUtils from 'utilities/AlertUtils';
 import DataSync from 'utilities/DataSync';
+import AppConfig from 'utilities/AppConfig';
 import ListSelectionDialog from 'widgets/ListSelectionDialog';
 import { connect } from 'react-redux';
 import styles from './styles';
 import * as action from 'actions/AssignmentAction';
 
 const MaterialHeaderButton = props => (
-  <HeaderButton {...props} IconComponent={MaterialIcons} iconSize={23} color="white" />
+  <HeaderButton 
+    {...props} 
+    IconComponent={MaterialIcons} 
+    iconSize={23} 
+    color="white" 
+  />
 );
 
 class ControllerComponent extends Component {
@@ -43,6 +52,7 @@ class ControllerComponent extends Component {
 
     this.joystickSize = 180;
     this.state = {
+      characteristics: {},
       layoutId: 0,
       isSyncing: false,
       assignDialogVisible: false,
@@ -52,8 +62,6 @@ class ControllerComponent extends Component {
       assigningButton: null,
       joystickX: 0,
       joystickY: 0,
-      joystickR: 0,
-      joystickPhi: 0,
       buttonsInput: 0,
       panResponder: PanResponder.create({
         onStartShouldSetPanResponder: () => true,
@@ -69,24 +77,43 @@ class ControllerComponent extends Component {
             : phiRad
           );
 
+          const joystickX = r * Math.cos(phiRad);
+          const joystickY = r * Math.sin(phiRad + Math.PI);
+
           this.setState({
-            joystickX: r * Math.cos(phiRad),
-            joystickY: r * Math.sin(phiRad + Math.PI),
-            joystickR: Math.round(r),
-            joystickPhi: Math.round(phiDeg / 2)
+            joystickX: joystickX,
+            joystickY: joystickY
           });
         },
         onPanResponderRelease: (event, gestureState) => this.setState({
           joystickX: 0,
-          joystickY: 0,
-          joystickR: 0,
-          joystickPhi: 0
+          joystickY: 0
         })
       })
     };
   }
 
   componentDidMount() {
+    if (this.props.robotServices) {
+      const liveMessageService = this.props.robotServices.find(item => (
+        item.uuid === AppConfig.services.liveMessage.id
+      ));
+
+      if (!liveMessageService) {
+        return;
+      }
+
+      liveMessageService.characteristics()
+        .then(list => {
+          this.setState({
+            characteristics: {
+              ...this.state.characteristics,
+              periodicController: this.findCharacteristic(list, 'periodicController')
+            }
+          });
+        });
+    }
+
     this.syncData();
     this.props.navigation.setParams({
       settingsPressed: this.settingsPressedHandler
@@ -94,13 +121,21 @@ class ControllerComponent extends Component {
   }
 
   componentWillUnmount() {
+    this.stopSending();
+  }
+
+  stopSending = () => {
     if (this.state.sendTimer) {
       clearInterval(this.state.sendTimer);
     }
-  }
+  };
+
+  findCharacteristic = (list, id) => (
+    AppConfig.findCharacteristic(list, 'liveMessage', id)
+  );
 
   syncData = () => {
-    if (this.props.uartCharacteristic) {
+    if (this.props.robotServices) {
       this.setState({
         isSyncing: true
       }, () => DataSync.sync(this.props, error => {
@@ -114,6 +149,8 @@ class ControllerComponent extends Component {
           isSyncing: false 
         });
       }));
+    } else {
+      this.setState({ isSyncing: false });
     }
   };
 
@@ -132,7 +169,10 @@ class ControllerComponent extends Component {
             <ActivityIndicator size="large" color="#e60312" />
           </View>
           <View style={styles.dialogButtonContainer}>
-            <TouchableOpacity style={styles.dialogButton} onPress={this.interruptSync}>
+            <TouchableOpacity 
+              style={styles.dialogButton} 
+              onPress={this.interruptSync}
+            >
               <Text style={styles.dialogButtonLabel}>Cancel</Text>
             </TouchableOpacity>
           </View>
@@ -155,7 +195,7 @@ class ControllerComponent extends Component {
     }, () => {
       if (this.state.settingsMode && this.state.sendTimer) {
         clearInterval(this.state.sendTimer);
-      } else if (this.props.uartCharacteristic) {
+      } else if (this.props.robotServices) {
         this.syncData();
       }
 
@@ -167,11 +207,26 @@ class ControllerComponent extends Component {
 
   sendData = async () => {
     const byteArray = new Uint8Array([
+      this.state.counter,
+      this.interpolate(this.state.joystickX),
+      this.interpolate(this.state.joystickY),
       0xff,
-      this.offsetPercent(this.state.joystickR),
-      this.state.joystickPhi,
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      0xff,
       this.state.buttonsInput,
-      this.state.counter
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      0xff
     ]);
 
     this.setState({
@@ -181,7 +236,7 @@ class ControllerComponent extends Component {
     try {
       const base64Data = base64.fromByteArray(byteArray);
       
-      this.props.uartCharacteristic.writeWithResponse(base64Data)
+      this.state.characteristics.periodicController.writeWithResponse(base64Data)
         .then()
         .catch(e => {
           clearInterval(this.state.sendTimer);
@@ -189,6 +244,8 @@ class ControllerComponent extends Component {
         });
     } catch (e) {
       console.warn(e.message);
+      console.error(JSON.stringify(Object.keys(this.state.characteristics)[0]));
+      this.stopSending();
     }
   };
 
@@ -305,6 +362,10 @@ class ControllerComponent extends Component {
     );
   }
 
+  interpolate = value => (
+    Math.floor((value + this.joystickSize / 2) * (255 / this.joystickSize))
+  );
+
   render() {
     return (
       <SafeAreaView style={styles.container}>
@@ -328,7 +389,7 @@ class ControllerComponent extends Component {
 }
 
 const mapStateToProps = state => ({
-  uartCharacteristic: state.BleReducer.get('uartCharacteristic'),
+  robotServices: state.BleReducer.get('robotServices'),
   savedConfig: state.RobotConfigReducer.get('savedConfig'),
   savedList: state.BlocklyReducer.get('savedList'),
   buttonAssignments: state.ButtonAssignmentReducer.get('assignments')

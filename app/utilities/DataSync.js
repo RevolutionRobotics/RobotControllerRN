@@ -1,36 +1,56 @@
 import base64 from 'base64-js';
+import AppConfig from 'utilities/AppConfig';
 
 export default class DataSync {
 
   static packetSize = 512;
 
   static sync = (props, callback) => {
-    const uartCharacteristic = props.uartCharacteristic;
-    if (!uartCharacteristic) {
+    const longMessageService = props.robotServices.find(item => (
+      item.uuid === AppConfig.services.longMessage.id
+    ));
+
+    if (!longMessageService) {
       return;
     }
 
     const savedConfig = props.savedConfig;
     const assignments = props.buttonAssignments;
+
     const blocklies = props.savedList
       .filter(blockly => (
         assignments.some(assignment => assignment.blocklyName === blockly.name)
       ))
       .map(blockly => ({
-        name: blockly.name || '',
-        pythonCode: blockly.pythonCode || ''
+        pythonCode: blockly.pythonCode || '',
+        assignments: assignments
+          .filter(assignment => assignment.blocklyName === blockly.name)
+          .map(assignment => ({ 
+            layoutId: assignment.layoutId,
+            btnId: assignment.btnId
+          }))
       }));
 
     const byteArray = encodeURIComponent(JSON.stringify({
       robotConfig: savedConfig,
-      assignments: assignments,
       blocklyList: blocklies
     })).split('').map(c => c.charCodeAt());
 
     try {
-      DataSync.sendPacket(uartCharacteristic, byteArray, 0, callback);
+      longMessageService.characteristics()
+        .then(characteristics => {
+          const sendConfigCharacteristic = AppConfig
+            .findCharacteristic(characteristics, 'longMessage', 'sendConfiguration');
+
+          if (sendConfigCharacteristic) {
+            DataSync.sendPacket(sendConfigCharacteristic, byteArray, 0, callback);
+          } else {
+            callback();
+          }
+        });
     } catch (e) {
       console.warn(e.message);
+      callback(e);
     }
   };
 
