@@ -30,7 +30,7 @@ class RobotConfigComponent extends Component {
     const menuIconType = (Platform.OS === 'android') ? 'vert' : 'horiz';
 
     return {
-      title: 'Blockly Editor',
+      title: 'Robot Configurator',
       headerRight: (
         <HeaderButtons 
           HeaderButtonComponent={MaterialHeaderButton}
