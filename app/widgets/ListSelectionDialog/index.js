@@ -29,10 +29,11 @@ export default class ListSelectionDialog extends Component {
     super(props);
   }
 
-  renderListDialogItem = ({item, index}) => (
+  renderListDialogItem = ({item}) => (
     <TouchableOpacity 
+      key={item.key}
       style={styles.listDialogItem}
-      onPress={ () => this.props.onItemSelected(item) }
+      onPress={() => this.props.onItemSelected(item)}
     >
       <Text style={styles.listDialogItemLabel}>{item.name}</Text>
     </TouchableOpacity>
@@ -66,7 +67,7 @@ export default class ListSelectionDialog extends Component {
                 data={this.props.listItems}
                 renderItem={this.renderListDialogItem}
                 removeClippedSubviews={true}
-                keyExtractor={(item, index) => item.name}
+                keyExtractor={(item, index) => `${item.name || 'item'} - ${index}`}
               />
             </View>
           </View>

@@ -6,8 +6,7 @@ export default StyleSheet.create({
   listDialogContainer: {
     width: 300,
     height: 300,
-    ...dialogStyle.dialogContainer,
-    ...dialogStyle.blocklyDialog
+    ...dialogStyle.dialogContainer
   },
   listDialogTitleContainer: {
     width: '100%',

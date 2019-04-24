@@ -6,6 +6,15 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: defaultValues.appBackground,
   },
+  containerEmpty: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center'
+  },
+  labelEmpty: {
+    color: 'white',
+    fontSize: 20
+  },
   listContainer: {
     paddingHorizontal: 50
   },

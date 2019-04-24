@@ -33,4 +33,27 @@ export default class AppConfig {
   static findCharacteristic = (list, service, id) => list.find(item => (
     item.uuid === AppConfig.services[service].characteristicIds[id]
   ));
+
+  static defaultRobotConfig = name => ({
+    name: name,
+    selected: false,
+    data: [
+      {
+        title: 'Motors',
+        data: Array(motorCount).fill({
+          name: '',
+          type: 0, // ['None', 'Motor', 'Drivetrain']
+          direction: 0, // ['Clockwise', 'Counter clockwise']
+          side: 0 // ['Left', 'Right']
+        })
+      },
+      {
+        title: 'Sensors',
+        data: Array(sensorCount).fill({
+          name: '',
+          type: 0 // ['None', 'Ultrasonic', 'Button']
+        })
+      }
+    ]
+  });
 };

@@ -4,17 +4,46 @@ import {
   TextInput,
   View,
   SafeAreaView,
-  StyleSheet
+  StyleSheet,
+  Platform
 } from 'react-native';
 import { connect } from 'react-redux';
 import RNPickerSelect from 'react-native-picker-select';
-
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import HeaderButtons, { HeaderButton, Item } from 'react-navigation-header-buttons';
 import KeyboardAwareSectionList from 'widgets/KeyboardAwareSectionList';
+import InputDialog from 'widgets/InputDialog';
+import ListSelectionDialog from 'widgets/ListSelectionDialog';
+import AlertUtils from 'utilities/AlertUtils';
 import ArrayUtils from 'utilities/ArrayUtils';
 import * as action from 'actions/RobotConfigAction';
 import styles from './styles';
+import AppConfig from '../../utilities/AppConfig';
+
+const MaterialHeaderButton = props => (
+  <HeaderButton {...props} IconComponent={MaterialIcons} iconSize={23} color="white" />
+);
 
 class RobotConfigComponent extends Component {
+
+  static navigationOptions = ({ navigation }) => {
+    const menuIconType = (Platform.OS === 'android') ? 'vert' : 'horiz';
+
+    return {
+      title: 'Blockly Editor',
+      headerRight: (
+        <HeaderButtons 
+          HeaderButtonComponent={MaterialHeaderButton}
+          OverflowIcon={<MaterialIcons name={`more-${menuIconType}`} size={23} color='white' />}
+        >
+          <Item title="New" show="never" onPress={navigation.getParam('newPressed')} />
+          <Item title="Open" show="never" onPress={navigation.getParam('openPressed')} />
+          <Item title="Save" show="never" onPress={navigation.getParam('savePressed')} />
+          <Item title="Delete" show="never" onPress={navigation.getParam('deletePressed')} />
+        </HeaderButtons>
+      )
+    };
+  };
 
   constructor(props) {
     super(props);
@@ -33,6 +62,9 @@ class RobotConfigComponent extends Component {
     };
 
     this.state = {
+      newDialogVisible: false,
+      openDialogVisible: false,
+      saveDialogVisible: false,
       motorTypes: Array.from({length: 3}, (_, index) => ({
         label: typeLabels.motors[index],
         value: index
@@ -50,6 +82,25 @@ class RobotConfigComponent extends Component {
         }
       })
     };
+  }
+
+  componentDidMount() {
+    this.props.navigation.setParams({
+      newPressed: () => this.setState({ newDialogVisible: true }),
+      openPressed: () => {
+        if (this.props.savedConfigList.length) {
+          this.setState({ openDialogVisible: true });
+          return;
+        }
+
+        AlertUtils.showError(
+          'Nothing to open',
+          'There are no saved robot configurations yet.'
+        );
+      },
+      savePressed: () => console.log('savePressed'),
+      deletePressed: () => console.log('deletePressed')
+    });
   }
 
   updateValue = (section, item, key, value) => {
@@ -174,6 +225,47 @@ class RobotConfigComponent extends Component {
     );
   };
 
+  renderNewDialog = () => (
+    <InputDialog
+      dialogTitle={'New Configuration'}
+      buttonPositiveText={'Create'}
+      onRequestClose={() => this.setState({ newDialogVisible: false })}
+      visible={this.state.newDialogVisible}
+      onValueSet={value => {
+        if (value) {
+          AlertUtils.showError('Error', 'Config name must not be empty!');
+          return;
+        }
+
+        const newConfig = AppConfig.defaultRobotConfig(value);
+        this.props.createConfig(newConfig);
+
+        this.setState({ newDialogVisible: false }, () => {
+          this.props.setRobotConfig(value);
+        });
+      }}
+    />
+  );
+
+  renderOpenDialog = () => (
+    <ListSelectionDialog
+      dialogTitle={'Open Configuration'}
+      listItems={this.props.savedConfigList}
+      onRequestClose={() => this.setState({ openDialogVisible: false })}
+      visible={this.state.openDialogVisible}
+      onItemSelected={config => this.props.setRobotConfig(config.name)}
+    />
+  );
+
+  renderSaveDialog = () => (
+    <InputDialog
+      dialogTitle={'Save Configuration'}
+      buttonPositiveText={'Save'}
+      onRequestClose={() => this.setState({ saveDialogVisible: false })}
+      visible={this.state.saveDialogVisible}
+    />
+  );
+
   renderList = sections => (
     <KeyboardAwareSectionList
       style={styles.listContainer}
@@ -187,16 +279,29 @@ class RobotConfigComponent extends Component {
       renderSectionHeader={({section}) => (
         <Text style={styles.sectionTitle}>{section.title}</Text>
       )}
-      renderSectionFooter={({section}) => <View />}
-      keyExtractor={ (item, index) => index }
+      renderSectionFooter={() => <View />}
+      keyExtractor={ (_, index) => index }
       removeClippedSubviews={true}
     />
   );
 
+  renderEmpty = () => (
+    <View style={styles.containerEmpty}>
+      <Text style={styles.labelEmpty}>
+        No robot config selected...
+      </Text>
+    </View>
+  );
+
   render() {
+    const selectedConfig = this.props.savedConfigList.find(config => config.selected);
+
     return (
       <SafeAreaView style={styles.container}>
-        {this.renderList(this.props.savedConfig)}
+        {selectedConfig ? this.renderList(selectedConfig) : this.renderEmpty()}
+        {this.renderNewDialog()}
+        {this.renderSaveDialog()}
+        {this.renderOpenDialog()}
       </SafeAreaView>
     );
   }
@@ -204,11 +309,13 @@ class RobotConfigComponent extends Component {
 }
 
 const mapStateToProps = state => ({
-  savedConfig: state.RobotConfigReducer.get('savedConfig')
+  savedConfigList: state.RobotConfigReducer.get('savedConfigList')
 });
 
 const mapDispatchToProps = dispatch => ({
-  updateConfig: (path, value) => dispatch(action.updateRobotConfig(path, value))
+  createRobotConfig: config => dispatch(action.createRobotConfig(config)),
+  setRobotConfig: name => dispatch(action.setRobotConfig(name))
+  //updateConfig: (path, value) => dispatch(action.updateRobotConfig(path, value))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(RobotConfigComponent);
