@@ -1,5 +1,9 @@
 export default class AppConfig {
 
+  /**
+   *  BLE services & characteristics properties
+   */
+
   static services = {
     longMessage: {
       id: '97148a03-5b9d-11e9-8647-d663bd873d93',
@@ -34,13 +38,20 @@ export default class AppConfig {
     item.uuid === AppConfig.services[service].characteristicIds[id]
   ));
 
+  /**
+   *  Robot Configurator properties
+   */
+
+  static motorCount = 6;
+  static sensorCount = 4;
+
   static defaultRobotConfig = name => ({
     name: name,
     selected: false,
-    data: [
+    ports: [
       {
         title: 'Motors',
-        data: Array(motorCount).fill({
+        data: Array(AppConfig.motorCount).fill({
           name: '',
           type: 0, // ['None', 'Motor', 'Drivetrain']
           direction: 0, // ['Clockwise', 'Counter clockwise']
@@ -49,7 +60,7 @@ export default class AppConfig {
       },
       {
         title: 'Sensors',
-        data: Array(sensorCount).fill({
+        data: Array(AppConfig.sensorCount).fill({
           name: '',
           type: 0 // ['None', 'Ultrasonic', 'Button']
         })

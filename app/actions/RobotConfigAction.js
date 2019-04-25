@@ -1,4 +1,4 @@
-import * as Actions from './ActionTypes';
+import * as Actions from './ActionTypes';
 
 export const createRobotConfig = config => ({
   type: Actions.CREATE_ROBOT_CONFIG,

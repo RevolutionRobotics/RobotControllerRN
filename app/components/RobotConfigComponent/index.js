@@ -16,6 +16,7 @@ import InputDialog from 'widgets/InputDialog';
 import ListSelectionDialog from 'widgets/ListSelectionDialog';
 import AlertUtils from 'utilities/AlertUtils';
 import ArrayUtils from 'utilities/ArrayUtils';
+import StateUtils from 'utilities/StateUtils';
 import * as action from 'actions/RobotConfigAction';
 import styles from './styles';
 import AppConfig from '../../utilities/AppConfig';
@@ -37,7 +38,7 @@ class RobotConfigComponent extends Component {
           OverflowIcon={<MaterialIcons name={`more-${menuIconType}`} size={23} color='white' />}
         >
           <Item title="New" show="never" onPress={navigation.getParam('newPressed')} />
-          <Item title="Open" show="never" onPress={navigation.getParam('openPressed')} />
+          <Item title="Select" show="never" onPress={navigation.getParam('openPressed')} />
           <Item title="Save" show="never" onPress={navigation.getParam('savePressed')} />
           <Item title="Delete" show="never" onPress={navigation.getParam('deletePressed')} />
         </HeaderButtons>
@@ -65,6 +66,7 @@ class RobotConfigComponent extends Component {
       newDialogVisible: false,
       openDialogVisible: false,
       saveDialogVisible: false,
+      selectedConfig: null,
       motorTypes: Array.from({length: 3}, (_, index) => ({
         label: typeLabels.motors[index],
         value: index
@@ -101,10 +103,20 @@ class RobotConfigComponent extends Component {
       savePressed: () => console.log('savePressed'),
       deletePressed: () => console.log('deletePressed')
     });
+
+    if (this.props.savedConfigList.length) {
+      this.setState({
+        selectedConfig: this.props.savedConfigList[this.props.selectedIndex]
+      });
+    }
   }
 
   updateValue = (section, item, key, value) => {
-    this.props.updateConfig([section, 'data', item, key], value);
+    this.setState({
+      selectedConfig: StateUtils.setStateDeep(this.state.selectedConfig, value, [
+        'ports', section, 'data', item, key
+      ])
+    });
   };
 
   renderMotorTypes = itemIndex => (
@@ -113,7 +125,7 @@ class RobotConfigComponent extends Component {
         style={this.state.configPickerStyle}
         useNativeAndroidPickerStyle={false}
         placeholder={{}}
-        value={this.props.savedConfig.getIn([0, 'data', itemIndex, 'type'])}
+        value={this.state.selectedConfig.ports[0].data[itemIndex].type}
         items={this.state.motorTypes}
         onValueChange={(_, index) => {
           this.updateValue(0, itemIndex, 'type', index);
@@ -123,7 +135,7 @@ class RobotConfigComponent extends Component {
         style={this.state.configPickerStyle}
         useNativeAndroidPickerStyle={false}
         placeholder={{}}
-        value={this.props.savedConfig.getIn([0, 'data', itemIndex, 'direction'])}
+        value={this.state.selectedConfig.ports[0].data[itemIndex].direction}
         items={[
           {
             label: 'Clockwise',
@@ -143,7 +155,7 @@ class RobotConfigComponent extends Component {
   );
 
   renderSidePicker = itemIndex => {
-    if (this.props.savedConfig.getIn([0, 'data', itemIndex, 'type']) !== 2) {
+    if (this.state.selectedConfig.ports[0].data[itemIndex].type !== 2) {
       return <View />;
     }
 
@@ -154,7 +166,7 @@ class RobotConfigComponent extends Component {
           style={this.state.configPickerStyle}
           useNativeAndroidPickerStyle={false}
           placeholder={{}}
-          value={this.props.savedConfig.getIn([0, 'data', itemIndex, 'side'])}
+          value={this.state.selectedConfig.ports[0].data[itemIndex].side}
           items={[
             {
               label: 'Left',
@@ -178,7 +190,7 @@ class RobotConfigComponent extends Component {
       style={this.state.configPickerStyle}
       useNativeAndroidPickerStyle={false}
       placeholder={{}}
-      value={this.props.savedConfig.getIn([1, 'data', itemIndex, 'type'])}
+      value={this.state.selectedConfig.ports[1].data[itemIndex].type}
       items={this.state.sensorTypes}
       onValueChange={(_, index) => {
         this.updateValue(1, itemIndex, 'type', index);
@@ -208,9 +220,7 @@ class RobotConfigComponent extends Component {
                 onChangeText={text => {
                   this.updateValue(sectionIndex, index, 'name', text);
                 }}
-                value={this.props.savedConfig.getIn(
-                  [sectionIndex, 'data', index, 'name']
-                )}
+                value={this.state.selectedConfig.ports[sectionIndex].data[index].name}
               />
 
               <Text style={styles.configLabel}>Type:</Text>
@@ -232,17 +242,18 @@ class RobotConfigComponent extends Component {
       onRequestClose={() => this.setState({ newDialogVisible: false })}
       visible={this.state.newDialogVisible}
       onValueSet={value => {
-        if (value) {
+        if (!value) {
           AlertUtils.showError('Error', 'Config name must not be empty!');
           return;
         }
 
         const newConfig = AppConfig.defaultRobotConfig(value);
-        this.props.createConfig(newConfig);
+        this.props.createRobotConfig(newConfig);
 
-        this.setState({ newDialogVisible: false }, () => {
-          this.props.setRobotConfig(value);
-        });
+        this.setState({ 
+          newDialogVisible: false,
+          selectedConfig: newConfig
+        }, () => this.props.setRobotConfig(value));
       }}
     />
   );
@@ -270,7 +281,7 @@ class RobotConfigComponent extends Component {
     <KeyboardAwareSectionList
       style={styles.listContainer}
       contentContainerStyle={styles.listContentStyle}
-      sections={sections.toJS().map(section => ({
+      sections={sections.map(section => ({
         ...section, 
         data: ArrayUtils.chunk(section.data, 2)
       }))}
@@ -294,11 +305,12 @@ class RobotConfigComponent extends Component {
   );
 
   render() {
-    const selectedConfig = this.props.savedConfigList.find(config => config.selected);
-
     return (
       <SafeAreaView style={styles.container}>
-        {selectedConfig ? this.renderList(selectedConfig) : this.renderEmpty()}
+        {this.state.selectedConfig 
+          ? this.renderList(this.state.selectedConfig.ports) 
+          : this.renderEmpty()
+        }
         {this.renderNewDialog()}
         {this.renderSaveDialog()}
         {this.renderOpenDialog()}
@@ -309,7 +321,8 @@ class RobotConfigComponent extends Component {
 }
 
 const mapStateToProps = state => ({
-  savedConfigList: state.RobotConfigReducer.get('savedConfigList')
+  savedConfigList: state.RobotConfigReducer.get('savedConfigList'),
+  selectedIndex: state.RobotConfigReducer.get('selectedIndex')
 });
 
 const mapDispatchToProps = dispatch => ({

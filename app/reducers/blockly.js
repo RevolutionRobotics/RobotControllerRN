@@ -12,23 +12,27 @@ const initialState = Immutable.fromJS({
   savedList: []
 });
 
+const saveBlockly = (state, action) => {
+  const blocklyArray = state.get(savedKey) || [];
+  const existingIndex = blocklyArray.findIndex(item => (
+    item.name === action.data.name
+  ));
+
+  // Save new
+  if (existingIndex === -1) {
+    return state.set(savedKey, [...blocklyArray, action.data]);
+  }
+
+  // Save existing
+  return state.set(savedKey, Object.assign([], state.get(savedKey), {
+    [existingIndex]: action.data
+  }));
+};
+
 const BlocklyReducer = (state = initialState, action) => {
   switch (action.type) {
     case Actions.SAVE_BLOCKLY_XML:
-      const blocklyArray = state.get(savedKey) || [];
-      const existingIndex = blocklyArray.findIndex(item => (
-        item.name === action.data.name
-      ));
-
-      // Save new
-      if (existingIndex === -1) {
-        return save(state.set(savedKey, [...blocklyArray, action.data]));
-      }
-
-      // Save existing
-      return save(state.set(savedKey, Object.assign([], state.get(savedKey), {
-        [existingIndex]: action.data
-      })));
+      return save(saveBlockly(state, action));
     case Actions.SET_BLOCKLY_LIST:
       return state.set(savedKey, action.list);
     case Actions.DELETE_BLOCKLY_XML:
