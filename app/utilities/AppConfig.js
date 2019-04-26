@@ -47,7 +47,6 @@ export default class AppConfig {
 
   static defaultRobotConfig = name => ({
     name: name,
-    selected: false,
     ports: [
       {
         title: 'Motors',

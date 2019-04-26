@@ -36,9 +36,9 @@ const RootNavigator = createStackNavigator({
 
 const AppContainer = createAppContainer(RootNavigator);
 const cachedData = [
-  { key: 'assignments', action: 'setAssignments' },
-  { key: 'savedList',   action: 'setBlocklyList' },
-  { key: 'savedConfig', action: 'setRobotConfig' }
+  { key: 'assignments',     action: 'setAssignments'     },
+  { key: 'savedList',       action: 'setBlocklyList'     },
+  { key: 'savedConfigList', action: 'setRobotConfigList' }
 ];
 
 class NavigatorComponent extends Component {
@@ -74,7 +74,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
   setAssignments: assignments => dispatch(assignmentAction.setAssignments(assignments)),
   setBlocklyList: list => dispatch(blocklyAction.setBlocklyList(list)),
-  setRobotConfig: config => dispatch(configAction.setRobotConfig(config))
+  setRobotConfigList: list => dispatch(configAction.setRobotConfigList(list))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(NavigatorComponent);

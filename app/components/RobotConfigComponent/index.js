@@ -17,9 +17,9 @@ import ListSelectionDialog from 'widgets/ListSelectionDialog';
 import AlertUtils from 'utilities/AlertUtils';
 import ArrayUtils from 'utilities/ArrayUtils';
 import StateUtils from 'utilities/StateUtils';
+import AppConfig from 'utilities/AppConfig';
 import * as action from 'actions/RobotConfigAction';
 import styles from './styles';
-import AppConfig from '../../utilities/AppConfig';
 
 const MaterialHeaderButton = props => (
   <HeaderButton {...props} IconComponent={MaterialIcons} iconSize={23} color="white" />
@@ -90,7 +90,7 @@ class RobotConfigComponent extends Component {
     this.props.navigation.setParams({
       newPressed: () => this.setState({ newDialogVisible: true }),
       openPressed: () => {
-        if (this.props.savedConfigList.length) {
+        if (this.props.savedConfigList?.length) {
           this.setState({ openDialogVisible: true });
           return;
         }
@@ -100,18 +100,31 @@ class RobotConfigComponent extends Component {
           'There are no saved robot configurations yet.'
         );
       },
-      savePressed: () => console.log('savePressed'),
-      deletePressed: () => console.log('deletePressed')
+      savePressed: () => {
+        if (this.state.selectedConfig) {
+          this.setState({ saveDialogVisible: true });
+          return;
+        }
+
+        AlertUtils.showError(
+          'Nothing to save',
+          'Please create or select a configuration first!'
+        );
+      },
+      deletePressed: this.promptDelete
     });
 
-    if (this.props.savedConfigList.length) {
+    const selectedName = this.props.selectedName;
+    if (this.props.savedConfigList?.length && selectedName) {
       this.setState({
-        selectedConfig: this.props.savedConfigList[this.props.selectedIndex]
+        selectedConfig: this.props.savedConfigList.find(config => (
+          config.name === selectedName
+        ))
       });
     }
   }
 
-  updateValue = (section, item, key, value) => {
+  updateSelected = (section, item, key, value) => {
     this.setState({
       selectedConfig: StateUtils.setStateDeep(this.state.selectedConfig, value, [
         'ports', section, 'data', item, key
@@ -128,7 +141,7 @@ class RobotConfigComponent extends Component {
         value={this.state.selectedConfig.ports[0].data[itemIndex].type}
         items={this.state.motorTypes}
         onValueChange={(_, index) => {
-          this.updateValue(0, itemIndex, 'type', index);
+          this.updateSelected(0, itemIndex, 'type', index);
         }}
       />
       <RNPickerSelect
@@ -147,7 +160,7 @@ class RobotConfigComponent extends Component {
           }
         ]}
         onValueChange={(_, index) => {
-          this.updateValue(0, itemIndex, 'direction', index);
+          this.updateSelected(0, itemIndex, 'direction', index);
         }}
       />
       {this.renderSidePicker(itemIndex)}
@@ -178,7 +191,7 @@ class RobotConfigComponent extends Component {
             }
           ]}
           onValueChange={(_, index) => {
-            this.updateValue(0, itemIndex, 'side', index);
+            this.updateSelected(0, itemIndex, 'side', index);
           }}
         />
       </View>
@@ -193,7 +206,7 @@ class RobotConfigComponent extends Component {
       value={this.state.selectedConfig.ports[1].data[itemIndex].type}
       items={this.state.sensorTypes}
       onValueChange={(_, index) => {
-        this.updateValue(1, itemIndex, 'type', index);
+        this.updateSelected(1, itemIndex, 'type', index);
       }}
     />
   );
@@ -218,7 +231,7 @@ class RobotConfigComponent extends Component {
                 placeholder='name'
                 placeholderTextColor={'#aaaaaa'}
                 onChangeText={text => {
-                  this.updateValue(sectionIndex, index, 'name', text);
+                  this.updateSelected(sectionIndex, index, 'name', text);
                 }}
                 value={this.state.selectedConfig.ports[sectionIndex].data[index].name}
               />
@@ -245,6 +258,12 @@ class RobotConfigComponent extends Component {
         if (!value) {
           AlertUtils.showError('Error', 'Config name must not be empty!');
           return;
+        } else if (this.configExists(value)) {
+          AlertUtils.showError(
+            'This robot config already exists', 
+            'Please specify a new name.'
+          );
+          return;
         }
 
         const newConfig = AppConfig.defaultRobotConfig(value);
@@ -253,7 +272,7 @@ class RobotConfigComponent extends Component {
         this.setState({ 
           newDialogVisible: false,
           selectedConfig: newConfig
-        }, () => this.props.setRobotConfig(value));
+        }, () => this.props.selectRobotConfig(value));
       }}
     />
   );
@@ -264,9 +283,18 @@ class RobotConfigComponent extends Component {
       listItems={this.props.savedConfigList}
       onRequestClose={() => this.setState({ openDialogVisible: false })}
       visible={this.state.openDialogVisible}
-      onItemSelected={config => this.props.setRobotConfig(config.name)}
+      onItemSelected={config => this.setState({ 
+        openDialogVisible: false,
+        selectedConfig: config 
+      }, () => {
+        this.props.selectRobotConfig(config.name);
+      })}
     />
   );
+
+  configExists = name => this.props.savedConfigList?.some(config => (
+    config.name === name
+  ));
 
   renderSaveDialog = () => (
     <InputDialog
@@ -274,8 +302,55 @@ class RobotConfigComponent extends Component {
       buttonPositiveText={'Save'}
       onRequestClose={() => this.setState({ saveDialogVisible: false })}
       visible={this.state.saveDialogVisible}
+      value={this.state.selectedConfig?.name || ''}
+      onValueSet={value => {
+        const selectedConfig = this.state.selectedConfig;
+
+        if (!selectedConfig) {
+          AlertUtils.showError(
+            'Nothing to save', 
+            'Please select a configuration first!'
+          );
+          return;
+        } else if (selectedConfig.name !== value && this.configExists(value)) {
+          AlertUtils.showError(
+            'This robot config already exists', 
+            'Please specify a new name.'
+          );
+          return;
+        }
+
+        this.setState({
+          saveDialogVisible: false,
+          selectedConfig: {
+            ...selectedConfig,
+            name: value
+          }
+        }, () => {
+
+
+          this.props.saveRobotConfig(this.state.selectedConfig);
+        });
+      }}
     />
   );
+
+  promptDelete = () => {
+    if (!this.state.selectedConfig) {
+      AlertUtils.showError(
+        'Nothing to delete', 
+        'Please select a configuration first!'
+      );
+      return;
+    }
+
+    const name = this.state.selectedConfig.name;
+    AlertUtils.promptDelete('Delete Configuration', `Delete ${name}?`, () => {
+      this.setState({ selectedConfig: null }, () => {
+        this.props.deleteRobotConfig(name);
+      });
+    });
+  };
 
   renderList = sections => (
     <KeyboardAwareSectionList
@@ -317,17 +392,18 @@ class RobotConfigComponent extends Component {
       </SafeAreaView>
     );
   }
-
 }
 
 const mapStateToProps = state => ({
   savedConfigList: state.RobotConfigReducer.get('savedConfigList'),
-  selectedIndex: state.RobotConfigReducer.get('selectedIndex')
+  selectedName: state.RobotConfigReducer.get('selectedName')
 });
 
 const mapDispatchToProps = dispatch => ({
   createRobotConfig: config => dispatch(action.createRobotConfig(config)),
-  setRobotConfig: name => dispatch(action.setRobotConfig(name))
+  selectRobotConfig: name => dispatch(action.selectRobotConfig(name)),
+  saveRobotConfig: config => dispatch(action.saveRobotConfig(config)),
+  deleteRobotConfig: name => dispatch(action.deleteRobotConfig(name))
   //updateConfig: (path, value) => dispatch(action.updateRobotConfig(path, value))
 });
 

@@ -5,18 +5,23 @@ export const createRobotConfig = config => ({
   config
 });
 
-export const setRobotConfig = name => ({
+export const selectRobotConfig = name => ({
   type: Actions.SELECT_ROBOT_CONFIG,
   name
 });
 
-export const updateRobotConfig = (path, value) => ({
-  type: Actions.UPDATE_ROBOT_CONFIG,
-  path,
-  value
+export const saveRobotConfig = (index, config) => ({
+  type: Actions.SAVE_ROBOT_CONFIG,
+  index,
+  config
 });
 
-export const deleteRobotConfig = config => ({
+export const deleteRobotConfig = name => ({
   type: Actions.DELETE_ROBOT_CONFIG,
-  config
+  name
+});
+
+export const setRobotConfigList = data =>({
+  type: Actions.SET_ROBOT_CONFIG_LIST,
+  data
 });

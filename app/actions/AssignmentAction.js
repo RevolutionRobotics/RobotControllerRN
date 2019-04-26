@@ -1,4 +1,4 @@
-import * as Actions from './ActionTypes';
+import * as Actions from './ActionTypes';
 
 export const setAssignments = assignments => ({
   type: Actions.SET_ASSIGNMENTS,
