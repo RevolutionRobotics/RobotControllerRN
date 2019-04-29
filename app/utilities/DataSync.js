@@ -14,8 +14,10 @@ export default class DataSync {
       return;
     }
 
-    const savedConfig = props.savedConfig;
     const assignments = props.buttonAssignments;
+    const savedConfig = props.savedConfigList.find(config => (
+      config.name === props.selectedName
+    ));
 
     const blocklies = props.savedList
       .filter(blockly => (
@@ -32,7 +34,7 @@ export default class DataSync {
       }));
 
     const byteArray = encodeURIComponent(JSON.stringify({
-      robotConfig: savedConfig,
+      robotConfig: (savedConfig || AppConfig.defaultRobotConfig('')).ports,
       blocklyList: blocklies
     })).split('').map(c => c.charCodeAt());
 

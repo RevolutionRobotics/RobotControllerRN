@@ -244,7 +244,6 @@ class ControllerComponent extends Component {
         });
     } catch (e) {
       console.warn(e.message);
-      console.error(JSON.stringify(Object.keys(this.state.characteristics)[0]));
       this.stopSending();
     }
   };
@@ -390,7 +389,8 @@ class ControllerComponent extends Component {
 
 const mapStateToProps = state => ({
   robotServices: state.BleReducer.get('robotServices'),
-  savedConfig: state.RobotConfigReducer.get('savedConfig'),
+  savedConfigList: state.RobotConfigReducer.get('savedConfigList'),
+  selectedName: state.RobotConfigReducer.get('selectedName'),
   savedList: state.BlocklyReducer.get('savedList'),
   buttonAssignments: state.ButtonAssignmentReducer.get('assignments')
 });

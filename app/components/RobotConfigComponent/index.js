@@ -303,37 +303,41 @@ class RobotConfigComponent extends Component {
       onRequestClose={() => this.setState({ saveDialogVisible: false })}
       visible={this.state.saveDialogVisible}
       value={this.state.selectedConfig?.name || ''}
-      onValueSet={value => {
-        const selectedConfig = this.state.selectedConfig;
-
-        if (!selectedConfig) {
-          AlertUtils.showError(
-            'Nothing to save', 
-            'Please select a configuration first!'
-          );
-          return;
-        } else if (selectedConfig.name !== value && this.configExists(value)) {
-          AlertUtils.showError(
-            'This robot config already exists', 
-            'Please specify a new name.'
-          );
-          return;
-        }
-
-        this.setState({
-          saveDialogVisible: false,
-          selectedConfig: {
-            ...selectedConfig,
-            name: value
-          }
-        }, () => {
-
-
-          this.props.saveRobotConfig(this.state.selectedConfig);
-        });
-      }}
+      onValueSet={value => this.saveRobotConfig(value)}
     />
   );
+
+  saveRobotConfig = name => {
+    const selectedConfig = this.state.selectedConfig;
+
+    if (!selectedConfig) {
+      AlertUtils.showError(
+        'Nothing to save', 
+        'Please select a configuration first!'
+      );
+      return;
+    } else if (selectedConfig.name !== name && this.configExists(name)) {
+      AlertUtils.showError(
+        'This robot config already exists', 
+        'Please specify a new name.'
+      );
+      return;
+    }
+
+    const configIndex = this.props.savedConfigList.findIndex(item => (
+      item.name === this.state.selectedConfig.name
+    ));
+
+    this.setState({
+      saveDialogVisible: false,
+      selectedConfig: {
+        ...selectedConfig,
+        name: name
+      }
+    }, () => {
+      this.props.saveRobotConfig(configIndex, this.state.selectedConfig);
+    });
+  };
 
   promptDelete = () => {
     if (!this.state.selectedConfig) {
@@ -345,7 +349,7 @@ class RobotConfigComponent extends Component {
     }
 
     const name = this.state.selectedConfig.name;
-    AlertUtils.promptDelete('Delete Configuration', `Delete ${name}?`, () => {
+    AlertUtils.promptDelete('Delete Configuration', `Delete "${name}"?`, () => {
       this.setState({ selectedConfig: null }, () => {
         this.props.deleteRobotConfig(name);
       });
@@ -402,9 +406,8 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
   createRobotConfig: config => dispatch(action.createRobotConfig(config)),
   selectRobotConfig: name => dispatch(action.selectRobotConfig(name)),
-  saveRobotConfig: config => dispatch(action.saveRobotConfig(config)),
+  saveRobotConfig: (index, config) => dispatch(action.saveRobotConfig(index, config)),
   deleteRobotConfig: name => dispatch(action.deleteRobotConfig(name))
-  //updateConfig: (path, value) => dispatch(action.updateRobotConfig(path, value))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(RobotConfigComponent);

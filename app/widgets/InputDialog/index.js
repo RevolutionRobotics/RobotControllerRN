@@ -34,6 +34,18 @@ export default class InputDialog extends Component {
     };
   }
 
+  /**
+   * This lifecycle method is deprecated, but we still need to update the
+   * state on input change events. Updating the state does not trigger 
+   * 'getDerivedStateFromProps()' function, so until there's no solution 
+   * for that, we'll use 'componentWillReceiveProps()'.
+   */
+  componentWillReceiveProps(nextProps) {
+    if (this.state.value !== nextProps.value) {
+      this.setState({ value: nextProps.value });
+    }
+  }
+
   render() {
     return (
       <Modal
