@@ -279,7 +279,7 @@ class RobotConfigComponent extends Component {
 
   renderOpenDialog = () => (
     <ListSelectionDialog
-      dialogTitle={'Open Configuration'}
+      dialogTitle={'Select Configuration'}
       listItems={this.props.savedConfigList}
       onRequestClose={() => this.setState({ openDialogVisible: false })}
       visible={this.state.openDialogVisible}
