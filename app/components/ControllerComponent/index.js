@@ -23,6 +23,7 @@ import { connect } from 'react-redux';
 import styles from './styles';
 import * as action from 'actions/AssignmentAction';
 
+const btnBackgroundTask = -1;
 const MaterialHeaderButton = props => (
   <HeaderButton 
     {...props} 
@@ -38,6 +39,15 @@ class ControllerComponent extends Component {
     title: 'Remote Controller',
     headerRight: (
       <HeaderButtons HeaderButtonComponent={MaterialHeaderButton}>
+        <Item 
+          title='background task' 
+          iconName={'assignment'} 
+          style={{ display: navigation.getParam('settingsIcon') === 'check' 
+            ? 'flex' 
+            : 'none' 
+          }}
+          onPress={() => navigation.getParam('buttonPressed')(btnBackgroundTask)} 
+        />
         <Item 
           title='settings' 
           iconName={navigation.getParam('settingsIcon') || 'settings'} 
@@ -116,7 +126,8 @@ class ControllerComponent extends Component {
 
     this.syncData();
     this.props.navigation.setParams({
-      settingsPressed: this.settingsPressedHandler
+      settingsPressed: this.settingsPressedHandler,
+      buttonPressed: this.buttonPressed
     });
   }
 
