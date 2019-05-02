@@ -75,17 +75,12 @@ class ControllerComponent extends Component {
       buttonsInput: 0,
       panResponder: PanResponder.create({
         onStartShouldSetPanResponder: () => true,
-        onPanResponderMove: (event, gestureState) => {
+        onPanResponderMove: (_, gestureState) => {
           const x = gestureState.dx;
           const y = gestureState.dy;
 
           const phiRad = Math.atan2(-y, x);
           const r = Math.min(this.joystickSize / 2, Math.sqrt(x * x + y * y));
-
-          const phiDeg = this.radToDeg((phiRad < 0) 
-            ? (phiRad + 2 * Math.PI) 
-            : phiRad
-          );
 
           const joystickX = r * Math.cos(phiRad);
           const joystickY = r * Math.sin(phiRad + Math.PI);
@@ -95,7 +90,7 @@ class ControllerComponent extends Component {
             joystickY: joystickY
           });
         },
-        onPanResponderRelease: (event, gestureState) => this.setState({
+        onPanResponderRelease: () => this.setState({
           joystickX: 0,
           joystickY: 0
         })

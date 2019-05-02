@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import {  
   FlatList, 
   TouchableOpacity, 
+  ImageBackground,
+  View,
   Text,
   Alert
 } from 'react-native';
@@ -21,15 +23,18 @@ const MaterialHeaderButton = props => (
 const listData = [
   {
     title: 'Remote Controller',
-    navigation: 'Controller'
+    navigation: 'Controller',
+    background: require('images/cardBorderRed/cardBorderRed.png')
   },
   {
     title: 'Blockly Editor',
-    navigation: 'Blockly'
+    navigation: 'Blockly',
+    background: require('images/cardBorderYellow/cardBorderYellow.png')
   },
   {
     title: 'Robot Configurator',
-    navigation: 'RobotConfig'
+    navigation: 'RobotConfig',
+    background: require('images/cardBorderBlue/cardBorderBlue.png')
   }
 ];
 
@@ -122,13 +127,23 @@ class CardListComponent extends Component {
     }
   };
 
-  renderItem = ({item, index}) => {
+  renderItem = ({item}) => {
+    // const backgroundPath = `images/${item.background}/${item.background}.png`;
+
     return (
       <TouchableOpacity
         style={styles.card}
         onPress={() => this.props.navigation.navigate(item.navigation)}
       >
-        <Text style={styles.cardLabel}>{item.title}</Text>
+        <ImageBackground
+          source={item.background}
+          resizeMode='contain'
+          style={styles.cardBackground}
+        >
+          <View style={styles.cardContent}>
+            <Text style={styles.cardLabel}>{item.title}</Text>
+          </View>
+        </ImageBackground>
       </TouchableOpacity>
     );
   };
