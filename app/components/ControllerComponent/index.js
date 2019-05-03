@@ -18,6 +18,7 @@ import HeaderButtons, {
 import AlertUtils from 'utilities/AlertUtils';
 import DataSync from 'utilities/DataSync';
 import AppConfig from 'utilities/AppConfig';
+import MultiTouchComponent from 'widgets/MultiTouchComponent';
 import ListSelectionDialog from 'widgets/ListSelectionDialog';
 import { connect } from 'react-redux';
 import styles from './styles';
@@ -152,7 +153,7 @@ class ControllerComponent extends Component {
 
         this.setState({
           sendTimer: setInterval(this.sendData, 100), 
-          isSyncing: false 
+          isSyncing: false
         });
       }));
     } else {
@@ -275,8 +276,7 @@ class ControllerComponent extends Component {
     />)
     : (<View
       style={[styles.btnProgrammable, { opacity: this.opacityForButton(btnId) }]}
-      onTouchStart={() => this.setBitForButton(btnId, 1)}
-      onTouchEnd={() => this.setBitForButton(btnId, 0)}
+      onMultiTouch={event => this.setBitForButton(btnId, ~~event.isActive)}
     />);
 
   opacityForButton = btnId => (
@@ -324,8 +324,13 @@ class ControllerComponent extends Component {
             top: this.state.joystickY,
             left: this.state.joystickX
           }]}
+          onMultiTouch={event => {}}
+          onMultiPan={event => {
+            console.log(event);
+          }}
           {...this.state.panResponder.panHandlers}
         >
+          <View style={styles.joystickHandleGloss} />
         </View>
       </View>
     </View>
@@ -361,7 +366,7 @@ class ControllerComponent extends Component {
     }
 
     AlertUtils.promptDelete(
-      selectedBlockly.blocklyName, 
+      selectedBlockly.blocklyName,
       `Do you want to unassign blockly for this button?`,
       () => this.props.removeButtonAssignment(this.state.layoutId, btnId)
     );
@@ -374,20 +379,20 @@ class ControllerComponent extends Component {
   render() {
     return (
       <SafeAreaView style={styles.container}>
-        {this.renderJoystick()}
-        <View 
+        <MultiTouchComponent style={styles.multiTouch}>
+          {this.renderJoystick()}
+          <View style={styles.centerImageContainer}>
+            <Image 
+              style={styles.centerImage} 
+              resizeMode='contain'
+              source={require('images/rrf-tall-full-color.png')}
+            />
+          </View>
 
-        style={styles.centerImageContainer}>
-          <Image 
-            style={styles.centerImage} 
-            resizeMode='contain'
-            source={require('images/rrf-tall-full-color.png')}
-          />
-        </View>
-
-        {this.renderButtons()}
-        {this.renderAssignList()}
-        {this.renderSyncDialog()}
+          {this.renderButtons()}
+          {this.renderAssignList()}
+          {this.renderSyncDialog()}
+        </MultiTouchComponent>
       </SafeAreaView>
     );
   }

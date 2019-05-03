@@ -4,8 +4,11 @@ import { defaultValues, dialogStyle } from 'components/appStyles';
 export default StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: 'row',
     backgroundColor: defaultValues.appBackground
+  },
+  multiTouch: {
+    flex: 1,
+    flexDirection: 'row'
   },
   joystickContainer: {
     flex: 2,
@@ -21,6 +24,15 @@ export default StyleSheet.create({
   joystickHandle: {
     backgroundColor: defaultValues.appPrimary,
     ...defaultValues.shadow
+  },
+  joystickHandleGloss: {
+    width: 25,
+    height: 30,
+    borderRadius: 30,
+    backgroundColor: 'white',
+    transform: [{ rotate: '40deg' }],
+    margin: 12,
+    opacity: 0.7
   },
   btnContainer: {
     flex: 2,
