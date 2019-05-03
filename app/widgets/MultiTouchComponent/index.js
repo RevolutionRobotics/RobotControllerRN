@@ -197,7 +197,7 @@ export default class MultiTouchComponent extends Component {
         onLayout={() => {
           layoutCount++;
 
-          if (layoutCount === childCount && !this.state.loaded) {
+          if (layoutCount >= childCount && !this.state.loaded) {
             this.setState({ loaded: true })
           }
         }}
