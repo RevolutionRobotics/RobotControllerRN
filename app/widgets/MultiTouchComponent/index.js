@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View } from 'react-native';
+import { View, Platform } from 'react-native';
 import ArrayUtils from 'utilities/ArrayUtils';
 
 export default class MultiTouchComponent extends Component {
@@ -16,6 +16,11 @@ export default class MultiTouchComponent extends Component {
       componentFrames: [],
       activeTouches: []
     };
+  }
+
+  componentDidMount() {
+    const timeoutValue = (Platform.OS === 'ios') ? 500 : 0;
+    setTimeout(() => this.setState({ loaded: true }), timeoutValue);
   }
 
   onStartShouldSetResponder = event => {
@@ -183,24 +188,13 @@ export default class MultiTouchComponent extends Component {
   });
 
   render() {
-    const childCount = React.Children.count(this.props.children);
-    
-    let layoutCount = 0;
     let childIndex = 0;
-
     return (
       <View
         {...this.props}
         onStartShouldSetResponder={this.onStartShouldSetResponder}
         onTouchMove={this.onTouchMove}
         onTouchEnd={this.onTouchEnd}
-        onLayout={() => {
-          layoutCount++;
-
-          if (layoutCount >= childCount && !this.state.loaded) {
-            this.setState({ loaded: true })
-          }
-        }}
       >
         {this.state.loaded 
           ? this.mapChildren(this.props.children, (child, childrenProps) => {
