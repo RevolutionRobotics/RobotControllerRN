@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { View, Platform } from 'react-native';
+import { View, InteractionManager } from 'react-native';
 import ArrayUtils from 'utilities/ArrayUtils';
 
 export default class MultiTouchComponent extends Component {
@@ -19,8 +19,13 @@ export default class MultiTouchComponent extends Component {
   }
 
   componentDidMount() {
-    const timeoutValue = (Platform.OS === 'ios') ? 500 : 0;
-    setTimeout(() => this.setState({ loaded: true }), timeoutValue);
+    if (this.state.loaded) {
+      return;
+    }
+
+    InteractionManager.runAfterInteractions(() => {
+      this.setState({ loaded: true });
+    });
   }
 
   onStartShouldSetResponder = event => {
@@ -196,8 +201,7 @@ export default class MultiTouchComponent extends Component {
         onTouchMove={this.onTouchMove}
         onTouchEnd={this.onTouchEnd}
       >
-        {this.state.loaded 
-          ? this.mapChildren(this.props.children, (child, childrenProps) => {
+        {this.state.loaded && this.mapChildren(this.props.children, (child, childrenProps) => {
             if (!child.props.onMultiTouch && !Object.keys(childrenProps).length) {
               return child;
             }
@@ -205,7 +209,6 @@ export default class MultiTouchComponent extends Component {
             const key = `touchable-${childIndex++}`;
             return this.cloneChild(key, child, childrenProps);
           })
-          : null
         }
       </View>
     );
