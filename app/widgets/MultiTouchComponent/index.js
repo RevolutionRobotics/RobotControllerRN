@@ -19,13 +19,11 @@ export default class MultiTouchComponent extends Component {
   }
 
   componentDidMount() {
-    if (this.state.loaded) {
-      return;
+    if (!this.state.loaded) {
+      InteractionManager.runAfterInteractions(() => {
+        this.setState({ loaded: true });
+      });
     }
-
-    InteractionManager.runAfterInteractions(() => {
-      this.setState({ loaded: true });
-    });
   }
 
   onStartShouldSetResponder = event => {
@@ -34,15 +32,33 @@ export default class MultiTouchComponent extends Component {
       y: event.nativeEvent.pageY
     };
 
-    const touchedComponent = this.state.componentFrames.find(item => (
+    const touchedFrame = this.state.componentFrames.find(item => (
       this.isInsideFrame(touchCoordinates, item.frame)
     ));
 
-    if (touchedComponent) {
-      this.addTouch(touchedComponent, event.nativeEvent.identifier);
+    if (touchedFrame) {
+      const location = touchedFrame.panHandler ? { origin: touchCoordinates } : {};
+      this.addActiveTouch(touchedFrame, event.nativeEvent.identifier, location);
     }
 
     return false;
+  };
+
+  handlePan = (component, coordinates) => {
+    const activeTouch = this.state.activeTouches.find(item => (
+      item.component.key === component.key
+    ));
+
+    activeTouch?.component.panHandler({
+      coordinates: {
+        x0: activeTouch.origin.x,
+        y0: activeTouch.origin.y,
+        x: coordinates.x,
+        y: coordinates.y,
+        dx: coordinates.x - activeTouch.origin.x,
+        dy: coordinates.y - activeTouch.origin.y
+      }
+    });
   };
 
   onTouchMove = event => {
@@ -56,10 +72,8 @@ export default class MultiTouchComponent extends Component {
     ));
 
     if (movedInComponent) {
-      if (movedInComponent.onMultiPan) {
-        movedInComponent.onMultiPan({
-          coordinates: movedCoordinates
-        });
+      if (movedInComponent.panHandler) {
+        this.handlePan(movedInComponent, movedCoordinates);
       }
 
       return;
@@ -76,7 +90,7 @@ export default class MultiTouchComponent extends Component {
       }))
     ));
 
-    if (cancelledTouch) {
+    if (cancelledTouch && !cancelledTouch.component.panHandler) {
       cancelledTouch.component.handler({ isActive: false });
       this.setState({
         activeTouches: this.state.activeTouches.filter(touch => (
@@ -87,9 +101,9 @@ export default class MultiTouchComponent extends Component {
   };
 
   onTouchEnd = event => {
-    if (!event.nativeEvent.touches.length) {
+    const touchCount = event.nativeEvent.touches.length;
+    if (!touchCount) {
       this.emptyTouches();
-      return;
     }
 
     const releasedCoordinates = {
@@ -107,16 +121,21 @@ export default class MultiTouchComponent extends Component {
         activeTouches: this.state.activeTouches.filter(touch => (
           touch.component !== releasedComponent
         ))
+      }, () => {
+        if (touchCount < 1) {
+          this.emptyTouches();
+        }
       });
     }
   };
 
-  addTouch = (touchedComponent, eventId) => {
+  addActiveTouch = (touchedComponent, eventId, location) => {
     touchedComponent.handler({ isActive: true });
     this.setState({
       activeTouches: [
         ...this.state.activeTouches,
         { 
+          ...location,
           id: eventId,
           component: touchedComponent
         }
@@ -126,14 +145,11 @@ export default class MultiTouchComponent extends Component {
 
   emptyTouches = () => {
     const remainingTouches = [...this.state.activeTouches];
-
     this.setState({
       activeTouches: []
     });
 
-    remainingTouches.forEach(touch => {
-      touch.component.handler({ isActive: false })
-    });
+    remainingTouches.forEach(touch => touch.component.handler({ isActive: false }));
   };
 
   isInsideFrame = (touch, frame) => ArrayUtils.all([
@@ -142,18 +158,6 @@ export default class MultiTouchComponent extends Component {
     touch.x < frame.x + frame.width,
     touch.y < frame.y + frame.height
   ]);
-
-  mapChildren = (children, callback) => children.map(child => {
-    if (!React.isValidElement(child)) {
-      return child;
-    }
-
-    const childrenProps = child.props.children?.length
-      ? { children: this.mapChildren(child.props.children, callback) }
-      : {};
-
-    return callback(child, childrenProps);
-  });
 
   addTouchable = (key, childProps) => {
     this[key].measure((_fx, _fy, width, height, px, py) => {
@@ -168,7 +172,8 @@ export default class MultiTouchComponent extends Component {
             {
               key: key,
               frame: { x: px, y: py, width: width, height: height },
-              handler: childProps.onMultiTouch
+              handler: childProps.onMultiTouch,
+              panHandler: childProps.onMultiPan
             }
           ]
         });
@@ -192,6 +197,23 @@ export default class MultiTouchComponent extends Component {
     key: child.props.key || key
   });
 
+  mapChildren = (children, callback) => children.map(child => {
+    if (!React.isValidElement(child)) {
+      return child;
+    }
+
+    const childrenProps = {};
+    if (child.props.children) {
+      const childrenValue = Array.isArray(child.props.children)
+        ? child.props.children
+        : [child.props.children];
+
+      childrenProps.children = this.mapChildren(childrenValue, callback);
+    }
+
+    return callback(child, childrenProps);
+  });
+
   render() {
     let childIndex = 0;
     return (
@@ -201,8 +223,9 @@ export default class MultiTouchComponent extends Component {
         onTouchMove={this.onTouchMove}
         onTouchEnd={this.onTouchEnd}
       >
-        {this.state.loaded && this.mapChildren(this.props.children, (child, childrenProps) => {
-            if (!child.props.onMultiTouch && !Object.keys(childrenProps).length) {
+        {this.state.loaded && this.mapChildren(this.props.children, 
+          (child, childrenProps) => {
+            if (!child.props.onMultiTouch && !childrenProps.children) {
               return child;
             }
 

@@ -6,8 +6,7 @@ import {
   Text,
   Image,
   Modal,
-  ActivityIndicator,
-  PanResponder
+  ActivityIndicator
 } from 'react-native';
 import base64 from 'base64-js';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
@@ -25,6 +24,11 @@ import styles from './styles';
 import * as action from 'actions/AssignmentAction';
 
 const btnBackgroundTask = -1;
+const joystickSize = 180;
+
+const buttonColumnCount = 3;
+const buttonColumnOffsets = [25, -10, -25];
+
 const MaterialHeaderButton = props => (
   <HeaderButton 
     {...props} 
@@ -61,7 +65,6 @@ class ControllerComponent extends Component {
   constructor(props) {
     super(props);
 
-    this.joystickSize = 180;
     this.state = {
       characteristics: {},
       layoutId: 0,
@@ -74,28 +77,28 @@ class ControllerComponent extends Component {
       joystickX: 0,
       joystickY: 0,
       buttonsInput: 0,
-      panResponder: PanResponder.create({
-        onStartShouldSetPanResponder: () => true,
-        onPanResponderMove: (_, gestureState) => {
-          const x = gestureState.dx;
-          const y = gestureState.dy;
+      // panResponder: PanResponder.create({
+      //   onStartShouldSetPanResponder: () => true,
+      //   onPanResponderMove: (_, gestureState) => {
+      //     const x = gestureState.dx;
+      //     const y = gestureState.dy;
 
-          const phiRad = Math.atan2(-y, x);
-          const r = Math.min(this.joystickSize / 2, Math.sqrt(x * x + y * y));
+      //     const phiRad = Math.atan2(-y, x);
+      //     const r = Math.min(joystickSize / 2, Math.sqrt(x * x + y * y));
 
-          const joystickX = r * Math.cos(phiRad);
-          const joystickY = r * Math.sin(phiRad + Math.PI);
+      //     const joystickX = r * Math.cos(phiRad);
+      //     const joystickY = r * Math.sin(phiRad + Math.PI);
 
-          this.setState({
-            joystickX: joystickX,
-            joystickY: joystickY
-          });
-        },
-        onPanResponderRelease: () => this.setState({
-          joystickX: 0,
-          joystickY: 0
-        })
-      })
+      //     this.setState({
+      //       joystickX: joystickX,
+      //       joystickY: joystickY
+      //     });
+      //   },
+      //   onPanResponderRelease: () => this.setState({
+      //     joystickX: 0,
+      //     joystickY: 0
+      //   })
+      // })
     };
   }
 
@@ -194,7 +197,7 @@ class ControllerComponent extends Component {
 
   radToDeg = rad => (rad / Math.PI * 180);
 
-  offsetPercent = offset => Math.round(offset / (this.joystickSize / 2) * 100);
+  offsetPercent = offset => Math.round(offset / (joystickSize / 2) * 100);
 
   settingsPressedHandler = () => {
     this.setState({
@@ -270,14 +273,14 @@ class ControllerComponent extends Component {
 
   renderButton = btnId => this.state.settingsMode
     ? (<TouchableOpacity 
-      style={styles.btnProgrammable} 
-      onPress={() => this.buttonPressed(btnId)}
-      onLongPress={() => this.promptUnassign(btnId)}
-    />)
+        style={styles.btnProgrammable} 
+        onPress={() => this.buttonPressed(btnId)}
+        onLongPress={() => this.promptUnassign(btnId)}
+      />)
     : (<View
-      style={[styles.btnProgrammable, { opacity: this.opacityForButton(btnId) }]}
-      onMultiTouch={event => this.setBitForButton(btnId, ~~event.isActive)}
-    />);
+        style={[styles.btnProgrammable, { opacity: this.opacityForButton(btnId) }]}
+        onMultiTouch={event => this.setBitForButton(btnId, ~~event.isActive)}
+      />);
 
   opacityForButton = btnId => (
     ((this.state.buttonsInput >> btnId) & 1) ? .2 : 1
@@ -307,28 +310,50 @@ class ControllerComponent extends Component {
     </View>
   );
 
+  handleJoystickMove = event => {
+    const x = event.coordinates.dx;
+    const y = event.coordinates.dy;
+
+    const phiRad = Math.atan2(-y, x);
+    const r = Math.min(joystickSize / 2, Math.sqrt(x * x + y * y));
+
+    const joystickX = r * Math.cos(phiRad);
+    const joystickY = r * Math.sin(phiRad + Math.PI);
+
+    this.setState({
+      joystickX: joystickX,
+      joystickY: joystickY
+    });
+  };
+
   renderJoystick = () => (
     <View style={styles.joystickContainer}>
       <View
         style={[styles.joystickBase, {
-          width: this.joystickSize,
-          height: this.joystickSize,
-          borderRadius: this.joystickSize / 2
+          width: joystickSize,
+          height: joystickSize,
+          borderRadius: joystickSize / 2
         }]}
       >
         <View
           style={[styles.joystickHandle, {
-            width: this.joystickSize / 2,
-            height: this.joystickSize / 2,
-            borderRadius: this.joystickSize / 4,
+            width: joystickSize / 2,
+            height: joystickSize / 2,
+            borderRadius: joystickSize / 4,
             top: this.state.joystickY,
-            left: this.state.joystickX
+            left: this.state.joystickX,
+            opacity: this.state.joystickOpacity
           }]}
-          onMultiTouch={event => {}}
-          onMultiPan={event => {
-            console.log(event);
+          onMultiTouch={event => {
+            if (!event.isActive) {
+              this.setState({
+                joystickX: 0,
+                joystickY: 0
+              });
+            }
           }}
-          {...this.state.panResponder.panHandlers}
+          onMultiPan={this.handleJoystickMove}
+          // {...this.state.panResponder.panHandlers}
         >
           <View style={styles.joystickHandleGloss} />
         </View>
@@ -373,7 +398,7 @@ class ControllerComponent extends Component {
   }
 
   interpolate = value => (
-    Math.floor((value + this.joystickSize / 2) * (255 / this.joystickSize))
+    Math.floor((value + joystickSize / 2) * (255 / joystickSize))
   );
 
   render() {
