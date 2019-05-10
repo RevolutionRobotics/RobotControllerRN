@@ -26,9 +26,6 @@ import * as action from 'actions/AssignmentAction';
 const btnBackgroundTask = -1;
 const joystickSize = 180;
 
-const buttonColumnCount = 3;
-const buttonColumnOffsets = [25, -10, -25];
-
 const MaterialHeaderButton = props => (
   <HeaderButton 
     {...props} 
@@ -76,29 +73,7 @@ class ControllerComponent extends Component {
       assigningButton: null,
       joystickX: 0,
       joystickY: 0,
-      buttonsInput: 0,
-      // panResponder: PanResponder.create({
-      //   onStartShouldSetPanResponder: () => true,
-      //   onPanResponderMove: (_, gestureState) => {
-      //     const x = gestureState.dx;
-      //     const y = gestureState.dy;
-
-      //     const phiRad = Math.atan2(-y, x);
-      //     const r = Math.min(joystickSize / 2, Math.sqrt(x * x + y * y));
-
-      //     const joystickX = r * Math.cos(phiRad);
-      //     const joystickY = r * Math.sin(phiRad + Math.PI);
-
-      //     this.setState({
-      //       joystickX: joystickX,
-      //       joystickY: joystickY
-      //     });
-      //   },
-      //   onPanResponderRelease: () => this.setState({
-      //     joystickX: 0,
-      //     joystickY: 0
-      //   })
-      // })
+      buttonsInput: 0
     };
   }
 
@@ -315,10 +290,10 @@ class ControllerComponent extends Component {
     const y = event.coordinates.dy;
 
     const phiRad = Math.atan2(-y, x);
-    const r = Math.min(joystickSize / 2, Math.sqrt(x * x + y * y));
+    const r = Math.min(joystickSize / 2, Math.sqrt(x * x + y * y));
 
     const joystickX = r * Math.cos(phiRad);
-    const joystickY = r * Math.sin(phiRad + Math.PI);
+    const joystickY = r * Math.sin(phiRad + Math.PI);
 
     this.setState({
       joystickX: joystickX,
@@ -352,8 +327,7 @@ class ControllerComponent extends Component {
               });
             }
           }}
-          onMultiPan={this.handleJoystickMove}
-          // {...this.state.panResponder.panHandlers}
+          onMultiPan={this.handleJoystickMove}ó
         >
           <View style={styles.joystickHandleGloss} />
         </View>
