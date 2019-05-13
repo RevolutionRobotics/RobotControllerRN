@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { View, InteractionManager } from 'react-native';
-import ExtraDimensions from 'react-native-extra-dimensions-android';
 import ArrayUtils from 'utilities/ArrayUtils';
 
 export default class MultiTouchComponent extends Component {
@@ -23,18 +22,14 @@ export default class MultiTouchComponent extends Component {
     this.state = {
       loaded: false,
       componentFrames: [],
-      activeTouches: [],
-      sofMenuBarVisibleOnStart: null
+      activeTouches: []
     };
   }
 
   componentDidMount() {
     if (!this.state.loaded) {
       InteractionManager.runAfterInteractions(() => {
-        this.setState({ 
-          loaded: true,
-          sofMenuBarVisibleOnStart: ExtraDimensions.isSoftMenuBarEnabled()
-        });
+        this.setState({ loaded: true });
       });
     }
   }
@@ -46,7 +41,7 @@ export default class MultiTouchComponent extends Component {
       x: event.nativeEvent.pageX,
       y: event.nativeEvent.pageY
     };
-    
+
     const touchedFrame = this.state.componentFrames.find(item => (
       this.isInsideFrame(touchCoordinates, item)
     ));
