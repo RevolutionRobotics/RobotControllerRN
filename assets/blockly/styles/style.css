@@ -24,6 +24,10 @@ body,
   x: 20px;
 }
 
+#blockly-div .injectionDiv .blocklyToolboxDiv .blocklyTreeRoot {
+  padding: 20px 0;
+}
+
 #blockly-div .injectionDiv .blocklyScrollbarHorizontal .blocklyScrollbarHandle,
 #blockly-div .injectionDiv .blocklyScrollbarVertical .blocklyScrollbarHandle {
   rx: 2.5px;
