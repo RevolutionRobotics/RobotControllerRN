@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import React, { Component } from 'react';
 import { 
   TouchableOpacity,
@@ -327,7 +328,7 @@ class ControllerComponent extends Component {
               });
             }
           }}
-          onMultiPan={this.handleJoystickMove}ó
+          onMultiPan={this.handleJoystickMove}
         >
           <View style={styles.joystickHandleGloss} />
         </View>

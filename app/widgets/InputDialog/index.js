@@ -90,4 +90,4 @@ export default class InputDialog extends Component {
       </Modal>
     );
   }
-};
+}

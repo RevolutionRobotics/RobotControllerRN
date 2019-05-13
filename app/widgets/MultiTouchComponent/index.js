@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { View, InteractionManager } from 'react-native';
+import ExtraDimensions from 'react-native-extra-dimensions-android';
 import ArrayUtils from 'utilities/ArrayUtils';
 
 export default class MultiTouchComponent extends Component {
@@ -22,25 +23,30 @@ export default class MultiTouchComponent extends Component {
     this.state = {
       loaded: false,
       componentFrames: [],
-      activeTouches: []
+      activeTouches: [],
+      sofMenuBarVisibleOnStart: null
     };
   }
 
   componentDidMount() {
     if (!this.state.loaded) {
       InteractionManager.runAfterInteractions(() => {
-        this.setState({ loaded: true });
+        this.setState({ 
+          loaded: true,
+          sofMenuBarVisibleOnStart: ExtraDimensions.isSoftMenuBarEnabled()
+        });
       });
     }
   }
 
-  onStartShouldSetResponder = event => {
+  onStartShouldSetResponder = () => false;
+
+  onTouchStart = event => {
     const touchCoordinates = {
-      id: event.nativeEvent.identifier,
       x: event.nativeEvent.pageX,
       y: event.nativeEvent.pageY
     };
-
+    
     const touchedFrame = this.state.componentFrames.find(item => (
       this.isInsideFrame(touchCoordinates, item)
     ));
@@ -53,15 +59,12 @@ export default class MultiTouchComponent extends Component {
         } 
         : {};
 
-      this.addActiveTouch(touchedFrame, event.nativeEvent.identifier, location);
+      this.addActiveTouch(touchedFrame, location);
     }
-
-    return false;
-  };
+  }
 
   onTouchMove = event => {
     const movedCoordinates = {
-      id: event.nativeEvent.identifier,
       x: event.nativeEvent.pageX,
       y: event.nativeEvent.pageY
     };
@@ -78,10 +81,10 @@ export default class MultiTouchComponent extends Component {
       return;
     }
 
+    const touches = event.nativeEvent.touches;
     const cancelledTouch = this.state.activeTouches.find(item => (
-      ArrayUtils.none(event.nativeEvent.touches.map(touch => {
+      ArrayUtils.none(touches.map(touch => {
         const touchLocation = {
-          id: event.nativeEvent.identifier,
           x: touch.pageX,
           y: touch.pageY
         };
@@ -112,7 +115,6 @@ export default class MultiTouchComponent extends Component {
     }
 
     const releasedCoordinates = {
-      id: event.nativeEvent.identifier,
       x: event.nativeEvent.pageX,
       y: event.nativeEvent.pageY
     };
@@ -167,14 +169,13 @@ export default class MultiTouchComponent extends Component {
     }
   };
 
-  addActiveTouch = (touchedComponent, eventId, location) => {
+  addActiveTouch = (touchedComponent, location) => {
     touchedComponent.handler({ isActive: true });
     this.setState({
       activeTouches: [
         ...this.state.activeTouches,
         { 
           ...location,
-          id: eventId,
           component: touchedComponent
         }
       ]
@@ -274,6 +275,7 @@ export default class MultiTouchComponent extends Component {
       <View
         {...this.props}
         onStartShouldSetResponder={this.onStartShouldSetResponder}
+        onTouchStart={this.onTouchStart}
         onTouchMove={this.onTouchMove}
         onTouchEnd={this.onTouchEnd}
       >

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import base64 from 'base64-js';
 import AppConfig from 'utilities/AppConfig';
 
@@ -34,7 +35,7 @@ export default class DataSync {
       }));
 
     const byteArray = encodeURIComponent(JSON.stringify({
-      robotConfig: (savedConfig || AppConfig.defaultRobotConfig('')).ports,
+      robotConfig: (savedConfig || AppConfig.defaultRobotConfig('')).ports,
       blocklyList: blocklies
     })).split('').map(c => c.charCodeAt());
 

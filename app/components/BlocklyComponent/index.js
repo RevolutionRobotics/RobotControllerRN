@@ -7,8 +7,7 @@ import {
   Text,
   TextInput,
   Alert,
-  Modal,
-  FlatList
+  Modal
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { connect } from 'react-redux';

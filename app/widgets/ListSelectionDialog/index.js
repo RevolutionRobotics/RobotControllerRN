@@ -75,4 +75,4 @@ export default class ListSelectionDialog extends Component {
       </Modal>
     );
   }
-};
+}
