@@ -4,12 +4,20 @@ import ArrayUtils from 'utilities/ArrayUtils';
 
 export default class MultiTouchComponent extends Component {
 
+  /***
+
+    Multi Touch Component
+    _____________________
+
+    Child attributes:
+
+    * onMultiTouch - Function
+    * onMultiPan   - Function (optional)
+
+  ***/
+
   constructor(props) {
     super(props);
-
-    this.onStartShouldSetResponder = this.onStartShouldSetResponder.bind(this);
-    this.onTouchMove = this.onTouchMove.bind(this);
-    this.onTouchEnd = this.onTouchEnd.bind(this);
 
     this.state = {
       loaded: false,
@@ -150,10 +158,10 @@ export default class MultiTouchComponent extends Component {
 
       activeTouch.component.panHandler({
         coordinates: {
-          x0  : activeTouch.origin.x,
-          y0  : activeTouch.origin.y,
-          dx  : touchOffset.x,
-          dy  : touchOffset.y
+          x0: activeTouch.origin.x,
+          y0: activeTouch.origin.y,
+          dx: touchOffset.x,
+          dy: touchOffset.y
         }
       });
     }
@@ -237,12 +245,10 @@ export default class MultiTouchComponent extends Component {
           child.ref && child.ref(view);
           this[key] = view;
         },
-        onLayout: () => {
-          this.addTouchable(key, child.props);
-        }
+        onLayout: () => this.addTouchable(key, child.props)
       }
       : {}),
-    key: child.props.key || key
+    key: key
   });
 
   mapChildren = (children, callback) => children.map(child => {
@@ -277,7 +283,7 @@ export default class MultiTouchComponent extends Component {
               return child;
             }
 
-            const key = `touchable-${childIndex++}`;
+            const key = child.props.key || `touchable-${childIndex++}`;
             return this.cloneChild(key, child, childrenProps);
           })
         }
