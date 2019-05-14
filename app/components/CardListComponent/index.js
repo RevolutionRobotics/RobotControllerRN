@@ -127,26 +127,22 @@ class CardListComponent extends Component {
     }
   };
 
-  renderItem = ({item}) => {
-    // const backgroundPath = `images/${item.background}/${item.background}.png`;
-
-    return (
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => this.props.navigation.navigate(item.navigation)}
+  renderItem = ({item}) => (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => this.props.navigation.navigate(item.navigation)}
+    >
+      <ImageBackground
+        source={item.background}
+        resizeMode='contain'
+        style={styles.cardBackground}
       >
-        <ImageBackground
-          source={item.background}
-          resizeMode='contain'
-          style={styles.cardBackground}
-        >
-          <View style={styles.cardContent}>
-            <Text style={styles.cardLabel}>{item.title}</Text>
-          </View>
-        </ImageBackground>
-      </TouchableOpacity>
-    );
-  };
+        <View style={styles.cardContent}>
+          <Text style={styles.cardLabel}>{item.title}</Text>
+        </View>
+      </ImageBackground>
+    </TouchableOpacity>
+  );
 
   render() {
     return (
@@ -156,7 +152,7 @@ class CardListComponent extends Component {
           renderItem={this.renderItem}
           horizontal={true}
           removeClippedSubviews={true}
-          keyExtractor={(item, index) => item.title}
+          keyExtractor={item => item.title}
         />
       </SafeAreaView>
     );

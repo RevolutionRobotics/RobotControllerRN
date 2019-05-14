@@ -3,6 +3,7 @@ import {
   Platform,
   TouchableOpacity,
   KeyboardAvoidingView,
+  BackHandler,
   View,
   Text,
   TextInput,
@@ -11,9 +12,13 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { connect } from 'react-redux';
+import { HeaderBackButton } from 'react-navigation';
 import styles from './styles';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import HeaderButtons, { HeaderButton, Item } from 'react-navigation-header-buttons';
+import HeaderButtons, { 
+  HeaderButton,
+  Item
+} from 'react-navigation-header-buttons';
 import AlertUtils from 'utilities/AlertUtils';
 import * as action from 'actions/BlocklyAction';
 import ListSelectionDialog from 'widgets/ListSelectionDialog';
@@ -30,6 +35,11 @@ class BlocklyComponent extends Component {
 
     return {
       title: 'Blockly Editor',
+      gesturesEnabled: false,
+      headerLeft: (<HeaderBackButton 
+        tintColor={'white'} 
+        onPress={navigation.getParam('onBackPress')}  
+      />),
       headerRight: (
         <HeaderButtons 
           HeaderButtonComponent={MaterialHeaderButton}
@@ -57,12 +67,16 @@ class BlocklyComponent extends Component {
       openDialogVisible: false,
       saveDialogVisible: false,
       saveInputValue: '',
+      unsavedChanges: false,
       xmlData: '',
       pythonCode: ''
     };
   }
 
   componentDidMount() {
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
+    this.props.navigation.setParams({ onBackPress: this.handleBackPress });
+
     this.props.navigation.setParams({
       codeView: this.codeViewPressed,
       newPressed: this.newPressed,
@@ -72,10 +86,24 @@ class BlocklyComponent extends Component {
     });
   }
 
+  componentWillUnmount() {
+    BackHandler.removeEventListener('hardwareBackPress', this.handleBackPress);
+  }
+
+  handleBackPress = () => {
+    this.promptUnsaved(() => {
+      this.props.navigation.goBack();
+      return true;
+    });
+
+    return false;
+  };
+
   onWebViewMessage = event => {
     const data = JSON.parse(event.nativeEvent.data);
 
     this.setState({
+      unsavedChanges: true,
       xmlData: data.xmlData,
       pythonCode: data.pythonCode
     });
@@ -95,22 +123,23 @@ class BlocklyComponent extends Component {
   };
 
   newPressed = () => {
-    this.setState({
+    this.promptUnsaved(() => this.setState({
       currentName: '',
+      unsavedChanges: false,
       xmlData: '',
       pythonCode: ''
     }, () => {
       WebViewRef && WebViewRef.postMessage('');
-    });
+    }));
   };
 
   openPressed = () => {
-    if (this.props.savedList.length) {
-      this.setState({ openDialogVisible: true });
+    if (!this.props.savedList.length) {
+      AlertUtils.showError('Nothing to open', 'There are no scripts saved yet.');
       return;
     }
 
-    AlertUtils.showError('Nothing to open', 'There are no scripts saved yet.');
+    this.promptUnsaved(() => this.setState({ openDialogVisible: true }));
   };
 
   savePressed = () => {
@@ -148,6 +177,7 @@ class BlocklyComponent extends Component {
 
     this.props.saveBlocklyXml({ 
       name: name,
+      unsavedChanges: false,
       xmlData: this.state.xmlData,
       pythonCode: this.state.pythonCode
     });
@@ -180,6 +210,20 @@ class BlocklyComponent extends Component {
       ],
       { cancelable: false }
     );
+  };
+
+  promptUnsaved = callback => {
+    if (!this.state.unsavedChanges) {
+      callback();
+      return;
+    }
+
+    const blocklyName = this.state.currentName || 'Blockly';
+    AlertUtils.promptConfirm(
+      `Unsaved changes in ${blocklyName}`,
+      'Continue without saving?',
+      callback
+    )
   };
 
   closeSaveDialog = () => this.setState({ 
