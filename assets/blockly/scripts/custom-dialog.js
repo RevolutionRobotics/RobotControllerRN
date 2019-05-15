@@ -38,6 +38,14 @@ Blockly.confirm = function(message, callback) {
 
 /** Override Blockly.prompt() with custom implementation. */
 Blockly.prompt = function(message, defaultValue, callback) {
+  if ($('body').hasClass('webview')) {
+    promptWebView(message, defaultValue, callback);
+  } else {
+    promptBrowser(message, defaultValue, callback);
+  }
+};
+
+var promptBrowser = function(message, defaultValue, callback) {
   if (!$('body').hasClass('swal2-shown')) {
     Swal.fire({
       title: message,
@@ -56,24 +64,23 @@ Blockly.prompt = function(message, defaultValue, callback) {
   }
 };
 
-Blockly.setInputListeners = function() {
-  var input = $('.swal2-input');
-  var container = $('.swal2-popup');
+var promptWebView = function(message, defaultValue, callback) {
+  var outputData = {
+    inputDialog: {
+      message: message,
+      defaultValue: defaultValue
+    }
+  };
 
-  if (!input.hasClass('loaded')) {
-    input.blur();
-    input.addClass('loaded');
+  Blockly.onDialogInput = function(input) {
+    if (callback) {
+      callback(input);
+    }
+  };
 
-    input.focus(function() {
-      if (!container.hasClass('focused')) {
-        container.addClass('focused');
-      }
-    });
-
-    input.blur(function() {
-      if (container.hasClass('focused')) {
-        container.removeClass('focused');
-      }
-    });
-  } 
+  try {
+    window.postMessage(JSON.stringify(outputData), '*');
+  } catch (err) {
+    console.log(err);
+  }
 };

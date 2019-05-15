@@ -21,6 +21,7 @@ import HeaderButtons, {
 } from 'react-navigation-header-buttons';
 import AlertUtils from 'utilities/AlertUtils';
 import * as action from 'actions/BlocklyAction';
+import InputDialog from 'widgets/InputDialog';
 import ListSelectionDialog from 'widgets/ListSelectionDialog';
 
 const debugMode = false;
@@ -62,6 +63,7 @@ class BlocklyComponent extends Component {
   constructor(props) {
     super(props);
 
+    this.webView = null;
     this.state = {
       currentName: '',
       openDialogVisible: false,
@@ -69,7 +71,10 @@ class BlocklyComponent extends Component {
       saveInputValue: '',
       unsavedChanges: false,
       xmlData: '',
-      pythonCode: ''
+      pythonCode: '',
+      webInputDialogVisible: false,
+      webInputDialogTitle: '',
+      webInputDialogValue: ''
     };
   }
 
@@ -102,11 +107,41 @@ class BlocklyComponent extends Component {
   onWebViewMessage = event => {
     const data = JSON.parse(event.nativeEvent.data);
 
+    if (data.inputDialog) {
+      this.setState({ 
+        webInputDialogTitle: data.inputDialog.message,
+        webInputDialogValue: data.inputDialog.defaultValue,
+        webInputDialogVisible: true
+      });
+
+      return;
+    }
+
     this.setState({
       unsavedChanges: true,
       xmlData: data.xmlData,
       pythonCode: data.pythonCode
     });
+  };
+
+  renderWebInputDialog = () => (
+    <InputDialog
+      dialogTitle={this.state.webInputDialogTitle}
+      value={this.state.webInputDialogValue}
+      visible={this.state.webInputDialogVisible}
+      onRequestClose={() => {
+        this.setState({ webInputDialogVisible: false });
+        this.postData({ dialogValue: null });
+      }}
+      onValueSet={value => {
+        this.setState({ webInputDialogVisible: false });
+        this.postData({ dialogValue: value });
+      }}
+    />
+  );
+
+  postData = data => {
+    this.webView && this.webView.postMessage(JSON.stringify(data));
   };
 
   codeViewPressed = () => {
@@ -128,9 +163,7 @@ class BlocklyComponent extends Component {
       unsavedChanges: false,
       xmlData: '',
       pythonCode: ''
-    }, () => {
-      WebViewRef && WebViewRef.postMessage('');
-    }));
+    }, () => this.postData({})));
   };
 
   openPressed = () => {
@@ -276,9 +309,7 @@ class BlocklyComponent extends Component {
         this.setState({ 
           currentName: item.name,
           openDialogVisible: false
-        }, () => {
-          WebViewRef && WebViewRef.postMessage(item.xmlData);
-        });
+        }, () => this.postData({ domValue: item.xmlData }));
       }}
       onRequestClose={() => this.setState({ openDialogVisible: false })}
     />
@@ -294,16 +325,18 @@ class BlocklyComponent extends Component {
       <View style={styles.safeAreaContainer}>
         <View style={styles.blockly}>
           <WebView
-            ref={webViewRef => (WebViewRef = webViewRef)}
+            ref={webViewRef => (this.webView = webViewRef)}
             originWhitelist={['*']}
             source={{ uri: debugMode ? debugPath : htmlPath }}
             onMessage={this.onWebViewMessage}
             javaScriptEnabled={true}
             domStorageEnabled={true}
+            injectedJavaScript={'document.body.classList.add("webview")'}
             useWebKit={true}
           />
           {this.renderSaveDialog()}
           {this.renderOpenDialog()}
+          {this.renderWebInputDialog()}
         </View>
       </View>
     );
@@ -311,7 +344,6 @@ class BlocklyComponent extends Component {
 }
 
 const mapStateToProps = state => ({
-  uartCharacteristic: state.BleReducer.get('uartCharacteristic'),
   savedList: state.BlocklyReducer.get('savedList')
 });
 
