@@ -7,13 +7,6 @@
  */
 
 import React, { Component } from 'react';
-import {
-  Platform, 
-  Text, 
-  View,
-  SafeAreaView
-} from 'react-native';
-import { createStore } from 'redux';
 import { Provider } from 'react-redux';
 import NavigatorComponent from 'components/NavigatorComponent';
 import store from 'reducers/index';

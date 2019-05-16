@@ -2,16 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>LSApplicationCategoryType</key>
-	<string></string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Location is used for BLE</string>
-	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>Bluetooth is used for communicating with the robot</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>RRFRobotController</string>
+	<string>RobotController</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -28,6 +22,8 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>2</string>
+	<key>LSApplicationCategoryType</key>
+	<string></string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>
@@ -43,6 +39,10 @@
 			</dict>
 		</dict>
 	</dict>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Bluetooth is used for communicating with the robot</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Location is used for BLE</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Location is used for BLE</string>
 	<key>UIAppFonts</key>
