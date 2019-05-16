@@ -1,4 +1,4 @@
-package com.robotcontroller;
+package org.revolutionrobotics.RNRobotController;
 
 import android.app.Application;
 

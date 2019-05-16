@@ -76,31 +76,7 @@ export default class MultiTouchComponent extends Component {
       return;
     }
 
-    const touches = event.nativeEvent.touches;
-    const cancelledTouch = this.state.activeTouches.find(item => (
-      ArrayUtils.none(touches.map(touch => {
-        const touchLocation = {
-          x: touch.pageX,
-          y: touch.pageY
-        };
-
-        return this.isInsideFrame(touchLocation, item.component);
-      }))
-    ));
-
-    if (cancelledTouch) {
-      if (cancelledTouch.component.panHandler) {
-        this.handlePan(cancelledTouch.component, movedCoordinates);
-        return;
-      }
-
-      cancelledTouch.component.handler({ isActive: false });
-      this.setState({
-        activeTouches: this.state.activeTouches.filter(touch => (
-          touch.component !== cancelledTouch.component
-        ))
-      });
-    }
+    this.handleCancelledTouches(event, movedCoordinates);
   };
 
   onTouchEnd = event => {
@@ -131,6 +107,34 @@ export default class MultiTouchComponent extends Component {
       });
     }
   };
+
+  handleCancelledTouches = (event, movedCoordinates) => {
+    const touches = event.nativeEvent.touches;
+    const cancelledTouch = this.state.activeTouches.find(item => (
+      ArrayUtils.none(touches.map(touch => {
+        const touchLocation = {
+          x: touch.pageX,
+          y: touch.pageY
+        };
+
+        return this.isInsideFrame(touchLocation, item.component);
+      }))
+    ));
+
+    if (cancelledTouch) {
+      if (cancelledTouch.component.panHandler) {
+        this.handlePan(cancelledTouch.component, movedCoordinates);
+        return;
+      }
+
+      cancelledTouch.component.handler({ isActive: false });
+      this.setState({
+        activeTouches: this.state.activeTouches.filter(touch => (
+          touch.component !== cancelledTouch.component
+        ))
+      });
+    }
+  }
 
   handlePan = (component, coordinates) => {
     const activeTouch = this.state.activeTouches.find(item => (
