@@ -96,12 +96,8 @@ class BlocklyComponent extends Component {
   }
 
   handleBackPress = () => {
-    this.promptUnsaved(() => {
-      this.props.navigation.goBack();
-      return true;
-    });
-
-    return false;
+    this.promptUnsaved(this.props.navigation.goBack);
+    return this.state.unsavedChanges;
   };
 
   onWebViewMessage = event => {
