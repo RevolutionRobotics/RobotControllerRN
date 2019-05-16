@@ -34,10 +34,14 @@
   });
 
   document.addEventListener('message', function(message) {
-    Blockly.mainWorkspace.clear();
+    var messageData = JSON.parse(message.data);
 
-    if (message.data) {
-      var dom = Blockly.Xml.textToDom(message.data);
+    if (messageData.dialogValue) {
+      Blockly.onDialogInput(messageData.dialogValue);
+    } else if (messageData.domValue) {
+      Blockly.mainWorkspace.clear();
+
+      var dom = Blockly.Xml.textToDom(messageData.domValue);
       Blockly.Xml.domToWorkspace(dom, workspace);
     }
   });

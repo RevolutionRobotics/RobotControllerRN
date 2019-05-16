@@ -3,20 +3,26 @@ import {
   Platform,
   TouchableOpacity,
   KeyboardAvoidingView,
+  BackHandler,
   View,
   Text,
   TextInput,
   Alert,
-  Modal,
-  FlatList
+  Modal
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { connect } from 'react-redux';
-import { blocklyStyle as styles } from 'components/styles';
+import { HeaderBackButton } from 'react-navigation';
+import styles from './styles';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import HeaderButtons, { HeaderButton, Item } from 'react-navigation-header-buttons';
+import HeaderButtons, { 
+  HeaderButton,
+  Item
+} from 'react-navigation-header-buttons';
 import AlertUtils from 'utilities/AlertUtils';
 import * as action from 'actions/BlocklyAction';
+import InputDialog from 'widgets/InputDialog';
+import ListSelectionDialog from 'widgets/ListSelectionDialog';
 
 const debugMode = false;
 const MaterialHeaderButton = props => (
@@ -30,6 +36,11 @@ class BlocklyComponent extends Component {
 
     return {
       title: 'Blockly Editor',
+      gesturesEnabled: false,
+      headerLeft: (<HeaderBackButton 
+        tintColor={'white'} 
+        onPress={navigation.getParam('onBackPress')}  
+      />),
       headerRight: (
         <HeaderButtons 
           HeaderButtonComponent={MaterialHeaderButton}
@@ -52,17 +63,25 @@ class BlocklyComponent extends Component {
   constructor(props) {
     super(props);
 
+    this.webView = null;
     this.state = {
       currentName: '',
       openDialogVisible: false,
       saveDialogVisible: false,
       saveInputValue: '',
+      unsavedChanges: false,
       xmlData: '',
-      pythonCode: ''
+      pythonCode: '',
+      webInputDialogVisible: false,
+      webInputDialogTitle: '',
+      webInputDialogValue: ''
     };
   }
 
   componentDidMount() {
+    BackHandler.addEventListener('hardwareBackPress', this.handleBackPress);
+    this.props.navigation.setParams({ onBackPress: this.handleBackPress });
+
     this.props.navigation.setParams({
       codeView: this.codeViewPressed,
       newPressed: this.newPressed,
@@ -72,13 +91,57 @@ class BlocklyComponent extends Component {
     });
   }
 
+  componentWillUnmount() {
+    BackHandler.removeEventListener('hardwareBackPress', this.handleBackPress);
+  }
+
+  handleBackPress = () => {
+    this.promptUnsaved(() => {
+      this.props.navigation.goBack();
+      return true;
+    });
+
+    return false;
+  };
+
   onWebViewMessage = event => {
     const data = JSON.parse(event.nativeEvent.data);
 
+    if (data.inputDialog) {
+      this.setState({ 
+        webInputDialogTitle: data.inputDialog.message,
+        webInputDialogValue: data.inputDialog.defaultValue,
+        webInputDialogVisible: true
+      });
+
+      return;
+    }
+
     this.setState({
+      unsavedChanges: true,
       xmlData: data.xmlData,
       pythonCode: data.pythonCode
     });
+  };
+
+  renderWebInputDialog = () => (
+    <InputDialog
+      dialogTitle={this.state.webInputDialogTitle}
+      value={this.state.webInputDialogValue}
+      visible={this.state.webInputDialogVisible}
+      onRequestClose={() => {
+        this.setState({ webInputDialogVisible: false });
+        this.postData({ dialogValue: null });
+      }}
+      onValueSet={value => {
+        this.setState({ webInputDialogVisible: false });
+        this.postData({ dialogValue: value });
+      }}
+    />
+  );
+
+  postData = data => {
+    this.webView && this.webView.postMessage(JSON.stringify(data));
   };
 
   codeViewPressed = () => {
@@ -95,22 +158,21 @@ class BlocklyComponent extends Component {
   };
 
   newPressed = () => {
-    this.setState({
+    this.promptUnsaved(() => this.setState({
       currentName: '',
+      unsavedChanges: false,
       xmlData: '',
       pythonCode: ''
-    }, () => {
-      WebViewRef && WebViewRef.postMessage('');
-    });
+    }, () => this.postData({})));
   };
 
   openPressed = () => {
-    if (this.props.savedList.length) {
-      this.setState({ openDialogVisible: true });
+    if (!this.props.savedList.length) {
+      AlertUtils.showError('Nothing to open', 'There are no scripts saved yet.');
       return;
     }
 
-    AlertUtils.showError('Nothing to open', 'There are no scripts saved yet.');
+    this.promptUnsaved(() => this.setState({ openDialogVisible: true }));
   };
 
   savePressed = () => {
@@ -148,6 +210,7 @@ class BlocklyComponent extends Component {
 
     this.props.saveBlocklyXml({ 
       name: name,
+      unsavedChanges: false,
       xmlData: this.state.xmlData,
       pythonCode: this.state.pythonCode
     });
@@ -180,6 +243,20 @@ class BlocklyComponent extends Component {
       ],
       { cancelable: false }
     );
+  };
+
+  promptUnsaved = callback => {
+    if (!this.state.unsavedChanges) {
+      callback();
+      return;
+    }
+
+    const blocklyName = this.state.currentName || 'Blockly';
+    AlertUtils.promptConfirm(
+      `Unsaved changes in ${blocklyName}`,
+      'Continue without saving?',
+      callback
+    )
   };
 
   closeSaveDialog = () => this.setState({ 
@@ -224,54 +301,19 @@ class BlocklyComponent extends Component {
   );
 
   renderOpenDialog = () => (
-    <Modal
-      animationType='fade'
-      transparent={true}
+    <ListSelectionDialog
+      dialogTitle={'Open code'}
+      listItems={this.props.savedList}
       visible={this.state.openDialogVisible}
+      onItemSelected={item => {
+        this.setState({ 
+          currentName: item.name,
+          openDialogVisible: false
+        }, () => this.postData({ domValue: item.xmlData }));
+      }}
       onRequestClose={() => this.setState({ openDialogVisible: false })}
-      supportedOrientations={['portrait', 'landscape']}
-    >
-      <View style={styles.dialogBackdrop}>
-        <View style={styles.openDialogContainer}>
-          <Text style={styles.dialogTitle}>Open code</Text>
-          <View style={styles.openDialogListContainer}>
-            <FlatList
-              contentContainerStyle={{ paddingVertical: 20 }}
-              data={this.props.savedList}
-              renderItem={this.renderOpenDialogItem}
-              removeClippedSubviews={true}
-              keyExtractor={(item, index) => item.name}
-            />
-          </View>
-          <View style={styles.dialogButtonContainer}>
-            <TouchableOpacity 
-              style={styles.dialogButton} 
-              onPress={() => this.setState({ openDialogVisible: false })}
-            >
-              <Text style={styles.dialogButtonLabel}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </Modal>
+    />
   );
-
-  renderOpenDialogItem = ({item, index}) => {
-    return (
-      <TouchableOpacity style={styles.openDialogItem}
-        onPress={() => {
-          this.setState({ 
-            currentName: item.name,
-            openDialogVisible: false
-          }, () => {
-            WebViewRef && WebViewRef.postMessage(item.xmlData);
-          });
-        }}
-      >
-        <Text style={{ textAlign: 'center', color: 'white' }}>{item.name}</Text>
-      </TouchableOpacity>
-    );
-  };
 
   render() {
     const debugPath = 'http://localhost:8083/index.html';
@@ -283,16 +325,18 @@ class BlocklyComponent extends Component {
       <View style={styles.safeAreaContainer}>
         <View style={styles.blockly}>
           <WebView
-            ref={webViewRef => (WebViewRef = webViewRef)}
+            ref={webViewRef => (this.webView = webViewRef)}
             originWhitelist={['*']}
             source={{ uri: debugMode ? debugPath : htmlPath }}
             onMessage={this.onWebViewMessage}
             javaScriptEnabled={true}
             domStorageEnabled={true}
+            injectedJavaScript={'document.body.classList.add("webview")'}
             useWebKit={true}
           />
           {this.renderSaveDialog()}
           {this.renderOpenDialog()}
+          {this.renderWebInputDialog()}
         </View>
       </View>
     );
@@ -300,7 +344,6 @@ class BlocklyComponent extends Component {
 }
 
 const mapStateToProps = state => ({
-  uartCharacteristic: state.BleReducer.get('uartCharacteristic'),
   savedList: state.BlocklyReducer.get('savedList')
 });
 

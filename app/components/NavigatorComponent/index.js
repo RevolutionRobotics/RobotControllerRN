@@ -10,8 +10,9 @@ import BlocklyComponent from 'components/BlocklyComponent';
 import RobotConfigComponent from 'components/RobotConfigComponent';
 import CodeViewComponent from 'components/CodeViewComponent';
 
-import { navigatorStyle as styles } from 'components/styles';
+import styles from './styles';
 
+import * as assignmentAction from 'actions/AssignmentAction';
 import * as blocklyAction from 'actions/BlocklyAction';
 import * as configAction from 'actions/RobotConfigAction';
 
@@ -34,24 +35,23 @@ const RootNavigator = createStackNavigator({
 });
 
 const AppContainer = createAppContainer(RootNavigator);
+const cachedData = [
+  { key: 'assignments',     action: 'setAssignments'     },
+  { key: 'savedList',       action: 'setBlocklyList'     },
+  { key: 'savedConfigList', action: 'setRobotConfigList' }
+];
 
 class NavigatorComponent extends Component {
 
   constructor(props) {
     super(props);
-
-    this.loadSavedData('savedList', 'setBlocklyList');
-    this.loadSavedData('savedConfig', 'setRobotConfig');
+    
+    cachedData.forEach(item => AsyncStorage.getItem(item.key).then(data => {
+      if (data) {
+        this.props[item.action](JSON.parse(data));
+      }
+    }));
   }
-
-  loadSavedData = (key, callbackKey) => {
-    AsyncStorage.getItem(key)
-      .then(data => {
-        if (data) {
-          this.props[callbackKey](JSON.parse(data));
-        }
-      });
-  };
 
   render() {
     return (
@@ -72,8 +72,9 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
+  setAssignments: assignments => dispatch(assignmentAction.setAssignments(assignments)),
   setBlocklyList: list => dispatch(blocklyAction.setBlocklyList(list)),
-  setRobotConfig: config => dispatch(configAction.setRobotConfig(config))
+  setRobotConfigList: list => dispatch(configAction.setRobotConfigList(list))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(NavigatorComponent);

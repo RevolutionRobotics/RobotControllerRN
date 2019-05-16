@@ -435,7 +435,7 @@ var customBlocks = {
 
       Blockly.Python.definitions_['import_robot_lib'] = 'import robot_lib';
       var code = 'Sound.play_note(' 
-        + "octave='" + dropdown_octave + "', "
+        + 'octave=' + dropdown_octave + ', '
         + 'key=' + dropdown_key + ', '
         + 'duration=' + value_duration
         + ')\n';

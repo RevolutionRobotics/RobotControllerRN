@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import React, { Component } from 'react';
 import { 
   TouchableOpacity,
@@ -6,19 +7,33 @@ import {
   Text,
   Image,
   Modal,
-  ActivityIndicator,
-  PanResponder
+  ActivityIndicator
 } from 'react-native';
 import base64 from 'base64-js';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import HeaderButtons, { HeaderButton, Item } from 'react-navigation-header-buttons';
+import HeaderButtons, { 
+  HeaderButton, 
+  Item 
+} from 'react-navigation-header-buttons';
 import AlertUtils from 'utilities/AlertUtils';
 import DataSync from 'utilities/DataSync';
+import AppConfig from 'utilities/AppConfig';
+import MultiTouchComponent from 'widgets/MultiTouchComponent';
+import ListSelectionDialog from 'widgets/ListSelectionDialog';
 import { connect } from 'react-redux';
-import { controllerStyle as styles } from 'components/styles';
+import styles from './styles';
+import * as action from 'actions/AssignmentAction';
+
+const btnBackgroundTask = -1;
+const joystickSize = 180;
 
 const MaterialHeaderButton = props => (
-  <HeaderButton {...props} IconComponent={MaterialIcons} iconSize={23} color="white" />
+  <HeaderButton 
+    {...props} 
+    IconComponent={MaterialIcons} 
+    iconSize={23} 
+    color="white" 
+  />
 );
 
 class ControllerComponent extends Component {
@@ -27,6 +42,15 @@ class ControllerComponent extends Component {
     title: 'Remote Controller',
     headerRight: (
       <HeaderButtons HeaderButtonComponent={MaterialHeaderButton}>
+        <Item 
+          title='background task' 
+          iconName={'assignment'} 
+          style={{ display: navigation.getParam('settingsIcon') === 'check' 
+            ? 'flex' 
+            : 'none' 
+          }}
+          onPress={() => navigation.getParam('buttonPressed')(btnBackgroundTask)} 
+        />
         <Item 
           title='settings' 
           iconName={navigation.getParam('settingsIcon') || 'settings'} 
@@ -39,51 +63,65 @@ class ControllerComponent extends Component {
   constructor(props) {
     super(props);
 
-    this.joystickSize = 180;
     this.state = {
+      characteristics: {},
+      layoutId: 0,
       isSyncing: false,
+      assignDialogVisible: false,
       counter: 0,
       sendTimer: null,
       settingsMode: false,
-      assignListVisible: false,
+      assigningButton: null,
       joystickX: 0,
       joystickY: 0,
-      joystickR: 0,
-      joystickPhi: 0,
-      buttonsInput: 0,
-      panResponder: PanResponder.create({
-        onStartShouldSetPanResponder: () => true,
-        onPanResponderMove: (event, gestureState) => {
-          const x = gestureState.dx;
-          const y = gestureState.dy;
-
-          const phiRad = Math.atan2(-y, x);
-          const r = Math.min(this.joystickSize / 2, Math.sqrt(x * x + y * y));
-
-          const phiDeg = this.radToDeg((phiRad < 0) 
-            ? (phiRad + 2 * Math.PI) 
-            : phiRad
-          );
-
-          this.setState({
-            joystickX: r * Math.cos(phiRad),
-            joystickY: r * Math.sin(phiRad + Math.PI),
-            joystickR: Math.round(r),
-            joystickPhi: Math.round(phiDeg / 2)
-          });
-        },
-        onPanResponderRelease: (event, gestureState) => this.setState({
-          joystickX: 0,
-          joystickY: 0,
-          joystickR: 0,
-          joystickPhi: 0
-        })
-      })
+      buttonsInput: 0
     };
   }
 
   componentDidMount() {
-    if (this.props.uartCharacteristic) {
+    if (this.props.robotServices) {
+      const liveMessageService = this.props.robotServices.find(item => (
+        item.uuid === AppConfig.services.liveMessage.id
+      ));
+
+      if (!liveMessageService) {
+        return;
+      }
+
+      liveMessageService.characteristics()
+        .then(list => {
+          this.setState({
+            characteristics: {
+              ...this.state.characteristics,
+              periodicController: this.findCharacteristic(list, 'periodicController')
+            }
+          });
+        });
+    }
+
+    this.syncData();
+    this.props.navigation.setParams({
+      settingsPressed: this.settingsPressedHandler,
+      buttonPressed: this.buttonPressed
+    });
+  }
+
+  componentWillUnmount() {
+    this.stopSending();
+  }
+
+  stopSending = () => {
+    if (this.state.sendTimer) {
+      clearInterval(this.state.sendTimer);
+    }
+  };
+
+  findCharacteristic = (list, id) => (
+    AppConfig.findCharacteristic(list, 'liveMessage', id)
+  );
+
+  syncData = () => {
+    if (this.props.robotServices) {
       this.setState({
         isSyncing: true
       }, () => DataSync.sync(this.props, error => {
@@ -94,21 +132,13 @@ class ControllerComponent extends Component {
 
         this.setState({
           sendTimer: setInterval(this.sendData, 100), 
-          isSyncing: false 
+          isSyncing: false
         });
       }));
+    } else {
+      this.setState({ isSyncing: false });
     }
-
-    this.props.navigation.setParams({
-      settingsPressed: this.settingsPressedHandler
-    });
-  }
-
-  componentWillUnmount() {
-    if (this.state.sendTimer) {
-      clearInterval(this.state.sendTimer);
-    }
-  }
+  };
 
   renderSyncDialog = () => (
     <Modal
@@ -125,7 +155,10 @@ class ControllerComponent extends Component {
             <ActivityIndicator size="large" color="#e60312" />
           </View>
           <View style={styles.dialogButtonContainer}>
-            <TouchableOpacity style={styles.dialogButton} onPress={this.interruptSync}>
+            <TouchableOpacity 
+              style={styles.dialogButton} 
+              onPress={this.interruptSync}
+            >
               <Text style={styles.dialogButtonLabel}>Cancel</Text>
             </TouchableOpacity>
           </View>
@@ -140,12 +173,18 @@ class ControllerComponent extends Component {
 
   radToDeg = rad => (rad / Math.PI * 180);
 
-  offsetPercent = offset => Math.round(offset / (this.joystickSize / 2) * 100);
+  offsetPercent = offset => Math.round(offset / (joystickSize / 2) * 100);
 
   settingsPressedHandler = () => {
     this.setState({
       settingsMode: !this.state.settingsMode
     }, () => {
+      if (this.state.settingsMode && this.state.sendTimer) {
+        clearInterval(this.state.sendTimer);
+      } else if (this.props.robotServices) {
+        this.syncData();
+      }
+
       this.props.navigation.setParams({
         settingsIcon: this.state.settingsMode ? 'check' : 'settings'
       });
@@ -154,11 +193,26 @@ class ControllerComponent extends Component {
 
   sendData = async () => {
     const byteArray = new Uint8Array([
+      this.state.counter,
+      this.interpolate(this.state.joystickX),
+      this.interpolate(this.state.joystickY),
       0xff,
-      this.offsetPercent(this.state.joystickR),
-      this.state.joystickPhi,
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      0xff,
       this.state.buttonsInput,
-      this.state.counter
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      0xff,
+      0xff
     ]);
 
     this.setState({
@@ -168,7 +222,7 @@ class ControllerComponent extends Component {
     try {
       const base64Data = base64.fromByteArray(byteArray);
       
-      this.props.uartCharacteristic.writeWithResponse(base64Data)
+      this.state.characteristics.periodicController.writeWithResponse(base64Data)
         .then()
         .catch(e => {
           clearInterval(this.state.sendTimer);
@@ -176,6 +230,7 @@ class ControllerComponent extends Component {
         });
     } catch (e) {
       console.warn(e.message);
+      this.stopSending();
     }
   };
 
@@ -187,18 +242,21 @@ class ControllerComponent extends Component {
           'There are no Blockly scripts saved yet.'
         );
       } else {
-        this.setState({ assignListVisible: true });
+        this.setState({ assigningButton: btnId });
       }
     }
   };
 
-  renderButton = btnId => (
-    <View
-      style={[styles.btnProgrammable, { opacity: this.opacityForButton(btnId) }]}
-      onTouchStart={() => this.setBitForButton(btnId, 1)}
-      onTouchEnd={() => this.setBitForButton(btnId, 0)}
-    />
-  );
+  renderButton = btnId => this.state.settingsMode
+    ? (<TouchableOpacity 
+        style={styles.btnProgrammable} 
+        onPress={() => this.buttonPressed(btnId)}
+        onLongPress={() => this.promptUnassign(btnId)}
+      />)
+    : (<View
+        style={[styles.btnProgrammable, { opacity: this.opacityForButton(btnId) }]}
+        onMultiTouch={event => this.setBitForButton(btnId, ~~event.isActive)}
+      />);
 
   opacityForButton = btnId => (
     ((this.state.buttonsInput >> btnId) & 1) ? .2 : 1
@@ -228,64 +286,129 @@ class ControllerComponent extends Component {
     </View>
   );
 
+  handleJoystickMove = event => {
+    const x = event.coordinates.dx;
+    const y = event.coordinates.dy;
+
+    const phiRad = Math.atan2(-y, x);
+    const r = Math.min(joystickSize / 2, Math.sqrt(x * x + y * y));
+
+    const joystickX = r * Math.cos(phiRad);
+    const joystickY = r * Math.sin(phiRad + Math.PI);
+
+    this.setState({
+      joystickX: joystickX,
+      joystickY: joystickY
+    });
+  };
+
   renderJoystick = () => (
     <View style={styles.joystickContainer}>
       <View
         style={[styles.joystickBase, {
-          width: this.joystickSize,
-          height: this.joystickSize,
-          borderRadius: this.joystickSize / 2
+          width: joystickSize,
+          height: joystickSize,
+          borderRadius: joystickSize / 2
         }]}
       >
         <View
           style={[styles.joystickHandle, {
-            width: this.joystickSize / 2,
-            height: this.joystickSize / 2,
-            borderRadius: this.joystickSize / 4,
+            width: joystickSize / 2,
+            height: joystickSize / 2,
+            borderRadius: joystickSize / 4,
             top: this.state.joystickY,
-            left: this.state.joystickX
+            left: this.state.joystickX,
+            opacity: this.state.joystickOpacity
           }]}
-          {...this.state.panResponder.panHandlers}
+          onMultiTouch={event => {
+            if (!event.isActive) {
+              this.setState({
+                joystickX: 0,
+                joystickY: 0
+              });
+            }
+          }}
+          onMultiPan={this.handleJoystickMove}
         >
+          <View style={styles.joystickHandleGloss} />
         </View>
       </View>
     </View>
   );
 
   renderAssignList = () => (
-    <View />
+    <ListSelectionDialog
+      dialogTitle={'Assign code'}
+      listItems={this.props.savedList}
+      onItemSelected={item => {
+        const btnId = this.state.assigningButton;
+
+        this.props.addButtonAssignment(this.state.layoutId, btnId, item.name);
+        this.setState({ assigningButton: null });
+      }}
+      visible={this.state.assigningButton !== null}
+      onRequestClose={() => this.setState({ assigningButton: null })}
+    />
+  );
+
+  promptUnassign = btnId => {
+    const selectedBlockly = this.props.buttonAssignments.find(item => (
+      item.layoutId === this.state.layoutId && item.btnId === btnId
+    ));
+
+    if (!selectedBlockly) {
+      AlertUtils.showError(
+        'Button unassigned', 
+        'There\'s no code assigned for this button'
+      );
+
+      return;
+    }
+
+    AlertUtils.promptDelete(
+      selectedBlockly.blocklyName,
+      `Do you want to unassign blockly for this button?`,
+      () => this.props.removeButtonAssignment(this.state.layoutId, btnId)
+    );
+  }
+
+  interpolate = value => (
+    Math.floor((value + joystickSize / 2) * (255 / joystickSize))
   );
 
   render() {
     return (
       <SafeAreaView style={styles.container}>
-        {this.renderJoystick()}
-        <View 
+        <MultiTouchComponent style={styles.multiTouch}>
+          {this.renderJoystick()}
+          <View style={styles.centerImageContainer}>
+            <Image 
+              style={styles.centerImage} 
+              resizeMode='contain'
+              source={require('images/rrf-tall-full-color.png')}
+            />
+          </View>
 
-        style={styles.centerImageContainer}>
-          <Image 
-            style={styles.centerImage} 
-            resizeMode='contain'
-            source={require('images/rrf-tall-full-color.png')}
-          />
-        </View>
-
-        {this.renderButtons()}
-        {this.renderAssignList()}
-        {this.renderSyncDialog()}
+          {this.renderButtons()}
+          {this.renderAssignList()}
+          {this.renderSyncDialog()}
+        </MultiTouchComponent>
       </SafeAreaView>
     );
   }
 }
 
 const mapStateToProps = state => ({
-  uartCharacteristic: state.BleReducer.get('uartCharacteristic'),
-  savedConfig: state.RobotConfigReducer.get('savedConfig'),
-  savedList: state.BlocklyReducer.get('savedList')
+  robotServices: state.BleReducer.get('robotServices'),
+  savedConfigList: state.RobotConfigReducer.get('savedConfigList'),
+  selectedName: state.RobotConfigReducer.get('selectedName'),
+  savedList: state.BlocklyReducer.get('savedList'),
+  buttonAssignments: state.ButtonAssignmentReducer.get('assignments')
 });
 
 const mapDispatchToProps = dispatch => ({
-  // TODO: Implement mapping... 
+  addButtonAssignment: (layoutId, btnId, blocklyName) => dispatch(action.addButtonAssignment(layoutId, btnId, blocklyName)),
+  removeButtonAssignment: (layoutId, btnId) => dispatch(action.removeButtonAssignment(layoutId, btnId))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ControllerComponent);

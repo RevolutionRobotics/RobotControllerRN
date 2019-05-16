@@ -1,4 +1,4 @@
-import * as Actions from './ActionTypes';
+import * as Actions from './ActionTypes';
 
 export const saveBlocklyXml = data => ({
   type: Actions.SAVE_BLOCKLY_XML,

@@ -12,8 +12,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-navigation';
 import { connect } from 'react-redux';
-import { bleStyle as styles } from 'components/styles';
-import { name as appName } from 'app.json';
+import styles from './styles';
+import { name as appName } from '../../../app.json';
+import ArrayUtils from 'utilities/ArrayUtils';
+import AppConfig from 'utilities/AppConfig';
 import * as action from 'actions/BleAction';
 
 class BleSettingsComponent extends Component {
@@ -29,10 +31,7 @@ class BleSettingsComponent extends Component {
     this.state = {
       device: null,
       connectingDialogVisible: false,
-      uartServiceId: '0000ffe0-0000-1000-8000-00805f9b34fb',
-      uartCharacteristicId: '0000ffe1-0000-1000-8000-00805f9b34fb',
-      foundDevices: [],
-      emptyString: 'Initializing BLE device list...'
+      foundDevices: []
     }
   }
 
@@ -91,19 +90,18 @@ class BleSettingsComponent extends Component {
     );
   };
 
-  renderListOrEmpty = () => {
-    return this.state.foundDevices.length === 0 ?
-    (<Text style={styles.emptyString}>{this.state.emptyString}</Text>) : (
-      <FlatList 
+  renderListOrEmpty = () => this.state.foundDevices.length === 0 
+    ? (<Text style={styles.emptyString}>
+        {'Initializing BLE device list...'}
+      </Text>) 
+    : (<FlatList 
         style={styles.deviceList}
         contentContainerStyle={styles.listBottomPadding}
         data={this.state.foundDevices}
         renderItem={this.renderItem}
         keyExtractor={(item) => item.id}
         removeClippedSubviews={true}
-      />
-    );
-  };
+      />);
 
   renderItem = ({item, index}) => (
     <TouchableOpacity style={styles.deviceItem} onPress={() => this.connect(item)}>
@@ -170,7 +168,7 @@ class BleSettingsComponent extends Component {
           element.id === device.id
         ));
 
-        if (deviceInList || !device.serviceUUIDs?.includes(this.state.uartServiceId)) {
+        if (deviceInList || !this.isRobotService(device.serviceUUIDs)) { //device.serviceUUIDs?.includes(this.state.uartServiceId)) {
           return;
         }
       }
@@ -184,6 +182,10 @@ class BleSettingsComponent extends Component {
     });
   };
 
+  isRobotService = services => (
+    !!services?.some(item => item === AppConfig.services.liveMessage.id)
+  );
+
   connect = device => {
     // Stop scanning as it's not necessary if you are scanning for one device.
     this.manager.stopDeviceScan();
@@ -195,39 +197,19 @@ class BleSettingsComponent extends Component {
 
     // Proceed with connection.
     device.connect()
+      .then(device => device.discoverAllServicesAndCharacteristics(device.id))
       .then(device => {
-        console.log('CONNECTED TO BLE DEVICE');
-        return device.discoverAllServicesAndCharacteristics(device.id);
-      })
-      .then(device => {
-        console.log('LISTING DEVICE CHARACTERISTICS...');
-        console.log(device);
         device.services()
           .then(services => {
-            const uartService = services.find(item => (
-              item.uuid === this.state.uartServiceId
-            ));
+            if (this.isRobotService(services.map(item => item.uuid))) {
+              this.props.setRobotServices(services);
+              device.onDisconnected(() => {
+                this.props.setRobotServices(null);
+              });
 
-            if (uartService) {
-              uartService.characteristics()
-                .then(characteristics => {
-                  const uartCharacteristic = characteristics.find(item => (
-                    item.uuid === this.state.uartCharacteristicId
-                  ));
-
-                  if (uartCharacteristic) {
-                    this.props.setUartCharacteristic(uartCharacteristic);
-                    device.onDisconnected(() => {
-                      this.props.setUartCharacteristic(null);
-                    });
-
-                    this.setState({ 
-                      connectingDialogVisible: false 
-                    }, this.props.navigation.goBack);
-                  } else {
-                    this.disconnect(device.id);
-                  }
-                });
+              this.setState({
+                connectingDialogVisible: false
+              }, this.props.navigation.goBack);
             } else {
               this.disconnect(device.id);
             }
@@ -247,7 +229,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  setUartCharacteristic: characteristic => dispatch(action.setUartCharacteristic(characteristic))
+  setRobotServices: services => dispatch(action.setRobotServices(services))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(BleSettingsComponent);

@@ -2,13 +2,13 @@ import * as Actions from 'actions/ActionTypes';
 import Immutable from 'immutable';
 
 const initialState = Immutable.fromJS({
-  uartCharacteristic: null
+  robotServices: null
 });
 
 const BleReducer = (state = initialState, action) => {
   switch (action.type) {
-    case Actions.SET_UART_CHARACTERISTIC:
-      return state.set('uartCharacteristic', action.characteristic);
+    case Actions.SET_ROBOT_SERVICES:
+      return state.set('robotServices', action.services);
     default:
       return state;
   }

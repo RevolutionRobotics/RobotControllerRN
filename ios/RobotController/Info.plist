@@ -62,6 +62,10 @@
 		<string>Octicons.ttf</string>
 		<string>SimpleLineIcons.ttf</string>
 		<string>Zocial.ttf</string>
+		<string>jura_bold.otf</string>
+		<string>jura_light.otf</string>
+		<string>jura_medium.otf</string>
+		<string>jura.otf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

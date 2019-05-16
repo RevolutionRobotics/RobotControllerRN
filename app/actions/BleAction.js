@@ -1,6 +1,6 @@
-import * as Actions from './ActionTypes';
+import * as Actions from './ActionTypes';
 
-export const setUartCharacteristic = characteristic => ({
-  type: Actions.SET_UART_CHARACTERISTIC,
-  characteristic
+export const setRobotServices = services => ({
+  type: Actions.SET_ROBOT_SERVICES,
+  services
 });

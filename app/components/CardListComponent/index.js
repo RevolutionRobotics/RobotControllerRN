@@ -2,13 +2,16 @@ import React, { Component } from 'react';
 import {  
   FlatList, 
   TouchableOpacity, 
+  ImageBackground,
+  View,
   Text,
   Alert
 } from 'react-native';
 import { connect } from 'react-redux';
 import { BleManager } from 'react-native-ble-plx';
 import { SafeAreaView } from 'react-navigation';
-import { cardListStyle as styles } from 'components/styles';
+import styles from './styles';
+import AppConfig from 'utilities/AppConfig';
 
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import HeaderButtons, { HeaderButton, Item } from 'react-navigation-header-buttons';
@@ -20,15 +23,18 @@ const MaterialHeaderButton = props => (
 const listData = [
   {
     title: 'Remote Controller',
-    navigation: 'Controller'
+    navigation: 'Controller',
+    background: require('images/cardBorderRed/cardBorderRed.png')
   },
   {
     title: 'Blockly Editor',
-    navigation: 'Blockly'
+    navigation: 'Blockly',
+    background: require('images/cardBorderYellow/cardBorderYellow.png')
   },
   {
     title: 'Robot Configurator',
-    navigation: 'RobotConfig'
+    navigation: 'RobotConfig',
+    background: require('images/cardBorderBlue/cardBorderBlue.png')
   }
 ];
 
@@ -67,11 +73,11 @@ class CardListComponent extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.uartCharacteristic === nextProps.uartCharacteristic) {
+    if (this.props.robotServices === nextProps.robotServices) {
       return;
     }
 
-    const bleIcon = (nextProps.uartCharacteristic) 
+    const bleIcon = (nextProps.robotServices) 
       ? 'bluetooth-connected' 
       : 'bluetooth';
 
@@ -94,7 +100,7 @@ class CardListComponent extends Component {
   }
 
   isConnected = () => {
-    if (!this.props.uartCharacteristic) {
+    if (!this.props.robotServices) {
       return false;
     }
     
@@ -112,20 +118,31 @@ class CardListComponent extends Component {
   };
 
   disconnect = () => {
-    this.state.bleManager
-      .cancelDeviceConnection(this.props.uartCharacteristic.deviceID);
+    const liveMessageService = this.props.robotServices.find(item => (
+      item.uuid === AppConfig.services.liveMessage.id
+    ));
+
+    if (liveMessageService) {
+      this.state.bleManager.cancelDeviceConnection(liveMessageService.deviceID);
+    }
   };
 
-  renderItem = ({item, index}) => {
-    return (
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => this.props.navigation.navigate(item.navigation)}
+  renderItem = ({item}) => (
+    <TouchableOpacity
+      style={styles.card}
+      onPress={() => this.props.navigation.navigate(item.navigation)}
+    >
+      <ImageBackground
+        source={item.background}
+        resizeMode='contain'
+        style={styles.cardBackground}
       >
-        <Text style={styles.cardLabel}>{item.title}</Text>
-      </TouchableOpacity>
-    );
-  };
+        <View style={styles.cardContent}>
+          <Text style={styles.cardLabel}>{item.title}</Text>
+        </View>
+      </ImageBackground>
+    </TouchableOpacity>
+  );
 
   render() {
     return (
@@ -135,7 +152,7 @@ class CardListComponent extends Component {
           renderItem={this.renderItem}
           horizontal={true}
           removeClippedSubviews={true}
-          keyExtractor={(item, index) => item.title}
+          keyExtractor={item => item.title}
         />
       </SafeAreaView>
     );
@@ -143,7 +160,7 @@ class CardListComponent extends Component {
 }
 
 const mapStateToProps = state => ({
-  uartCharacteristic: state.BleReducer.get('uartCharacteristic')
+  robotServices: state.BleReducer.get('robotServices')
 });
 
 const mapDispatchToProps = dispatch => ({
