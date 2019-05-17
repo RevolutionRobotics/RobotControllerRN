@@ -1,6 +1,5 @@
 #!/bin/sh
 
-rsync -av --delete ./assets/blockly/ ./android/app/src/main/assets/blockly/
 react-native bundle \
   --platform android \
   --dev false \
