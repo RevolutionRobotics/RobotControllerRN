@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import { AsyncStorage, StatusBar, View } from 'react-native';
+import { StatusBar, View } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 import { createStackNavigator, createAppContainer } from 'react-navigation';
 import { connect } from 'react-redux';
 

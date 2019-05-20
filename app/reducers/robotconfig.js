@@ -1,6 +1,6 @@
 import * as Actions from 'actions/ActionTypes';
 import { fromJS } from 'immutable';
-import { AsyncStorage } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const savedListKey = 'savedConfigList';
 const savedSelectionKey = 'selectedName';
