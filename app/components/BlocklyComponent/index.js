@@ -279,6 +279,7 @@ class BlocklyComponent extends Component {
                 style={styles.dialogInput} 
                 placeholder={'Script name...'}
                 placeholderTextColor={'#aaaaaa'}
+                disableFullscreenUI={true}
                 onChangeText={value => this.setState({ saveInputValue: value })}
                 value={this.state.saveInputValue}
               ></TextInput>

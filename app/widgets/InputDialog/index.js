@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { 
+  KeyboardAvoidingView,
   TouchableOpacity,
   View,
   Text,
@@ -56,36 +57,42 @@ export default class InputDialog extends Component {
         supportedOrientations={['portrait', 'landscape']}
       >
         <View style={styles.inputDialogBackdrop}>
-          <View style={styles.inputDialogContainer}>
-            <View style={styles.inputDialogTitleContainer}>
-              <Text style={styles.inputDialogTitle}>
-                {this.props.dialogTitle}
-              </Text>
-              <TouchableOpacity 
-                style={styles.inputDialogButton} 
-                onPress={this.props.onRequestClose}
-              >
-                <Text style={styles.inputDialogButtonLabel}>×</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.inputDialogMainContainer}>
-              <TextInput 
-                style={styles.textInput}
-                value={this.state.value}
-                onChangeText={text => this.setState({ value: text })}
-              />
-            </View>
-            <View style={styles.inputDialogButtonContainer}>
-              <TouchableOpacity 
-                style={styles.inputDialogButtonPositive}
-                onPress={() => this.props.onValueSet(this.state.value)}
-              >
-                <Text style={styles.inputDialogLabelPositive}>
-                  {this.props.buttonPositiveText || 'OK'}
+          <KeyboardAvoidingView
+            keyboardVerticalOffset={-25}
+            behavior='position'
+          >
+            <View style={styles.inputDialogContainer}>
+              <View style={styles.inputDialogTitleContainer}>
+                <Text style={styles.inputDialogTitle}>
+                  {this.props.dialogTitle}
                 </Text>
-              </TouchableOpacity>
+                <TouchableOpacity 
+                  style={styles.inputDialogButton} 
+                  onPress={this.props.onRequestClose}
+                >
+                  <Text style={styles.inputDialogButtonLabel}>×</Text>
+                </TouchableOpacity>
+              </View>
+              <View style={styles.inputDialogMainContainer}>
+                <TextInput 
+                  style={styles.textInput}
+                  value={this.state.value}
+                  disableFullscreenUI={true}
+                  onChangeText={text => this.setState({ value: text })}
+                />
+              </View>
+              <View style={styles.inputDialogButtonContainer}>
+                <TouchableOpacity 
+                  style={styles.inputDialogButtonPositive}
+                  onPress={() => this.props.onValueSet(this.state.value)}
+                >
+                  <Text style={styles.inputDialogLabelPositive}>
+                    {this.props.buttonPositiveText || 'OK'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
+          </KeyboardAvoidingView>
         </View>
       </Modal>
     );
