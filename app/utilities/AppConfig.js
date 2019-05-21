@@ -8,11 +8,7 @@ export default class AppConfig {
     longMessage: {
       id: '97148a03-5b9d-11e9-8647-d663bd873d93',
       characteristicIds: {
-        updateFirmware      : '97148a04-5b9d-11e9-8647-d663bd873d93',
-        updateFramework     : '97148e28-5b9d-11e9-8647-d663bd873d93',
-        testKit             : '97148f90-5b9d-11e9-8647-d663bd873d93',
-        sendConfiguration   : '971490c6-5b9d-11e9-8647-d663bd873d93',
-        changeName          : '971495d0-5b9d-11e9-8647-d663bd873d93'
+        longMessages        : 'd59bb321-7218-4fb9-abac-2f6814f31a4d'
       }
     },
     liveMessage: {
