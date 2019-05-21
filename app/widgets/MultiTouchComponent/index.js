@@ -1,5 +1,10 @@
 import React, { Component } from 'react';
-import { View, InteractionManager } from 'react-native';
+import { 
+  View, 
+  DeviceEventEmitter, 
+  InteractionManager,
+  Platform
+} from 'react-native';
 import ArrayUtils from 'utilities/ArrayUtils';
 
 export default class MultiTouchComponent extends Component {
@@ -22,7 +27,8 @@ export default class MultiTouchComponent extends Component {
     this.state = {
       loaded: false,
       componentFrames: [],
-      activeTouches: []
+      activeTouches: [],
+      softNavListener: null
     };
   }
 
@@ -32,6 +38,25 @@ export default class MultiTouchComponent extends Component {
         this.setState({ loaded: true });
       });
     }
+
+    if (Platform.OS === 'android') {
+      this.state.softNavListener = DeviceEventEmitter.addListener(
+        'softNavDisplayEvent', 
+        this.softNavDisplayChanged
+      );
+    }
+  }
+
+  componentWillUnmount() {
+    this.state.softNavListener?.remove();
+  }
+
+  softNavDisplayChanged = () => {
+    this.setState({
+      loaded: false,
+      componentFrames: [],
+      activeTouches: []
+    }, () => this.setState({ loaded: true }));
   }
 
   onStartShouldSetResponder = () => false;

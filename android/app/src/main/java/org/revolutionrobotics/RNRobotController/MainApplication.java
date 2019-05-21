@@ -3,19 +3,22 @@ package org.revolutionrobotics.RNRobotController;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
-import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
-import ca.jaysoo.extradimensions.ExtraDimensionsPackage;
-import com.oblador.vectoricons.VectorIconsPackage;
-import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
-import com.polidea.reactnativeble.BlePackage;
-import com.reactnativecommunity.webview.RNCWebViewPackage;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
 import com.facebook.soloader.SoLoader;
+import com.oblador.vectoricons.VectorIconsPackage;
+import com.polidea.reactnativeble.BlePackage;
+import com.reactnativecommunity.asyncstorage.AsyncStoragePackage;
+import com.reactnativecommunity.webview.RNCWebViewPackage;
+import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
+
+import org.revolutionrobotics.softnav.SoftNavPackage;
 
 import java.util.Arrays;
 import java.util.List;
+
+import ca.jaysoo.extradimensions.ExtraDimensionsPackage;
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -29,12 +32,13 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
-            new AsyncStoragePackage(),
-            new ExtraDimensionsPackage(),
-            new VectorIconsPackage(),
-            new RNGestureHandlerPackage(),
-            new BlePackage(),
-            new RNCWebViewPackage()
+          new AsyncStoragePackage(),
+          new ExtraDimensionsPackage(),
+          new VectorIconsPackage(),
+          new RNGestureHandlerPackage(),
+          new BlePackage(),
+          new RNCWebViewPackage(),
+          new SoftNavPackage()
       );
     }
 
