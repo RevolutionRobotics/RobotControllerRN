@@ -78,6 +78,7 @@ export default class DataSync {
     ));
 
     if (!longMessageService) {
+      console.debug("syncLongMessage: exit no message service");
       return;
     }
 
@@ -85,21 +86,27 @@ export default class DataSync {
     const longMessageCharacteristic = AppConfig.findCharacteristic(await longMessageService.characteristics(), 'longMessage', 'longMessages');
 
     try {
+      console.debug("syncLongMessage: selecting message type");
       await longMessageCharacteristic.writeWithResponse(base64.fromByteArray(new Uint8Array([DataSync.PACKET_SELECT_LONG_MESSAGE_TYPE, messagetype])));
+      console.debug("syncLongMessage: calculating md5");
       const md5value = md5(data, {asBytes:true});
       // TODO read status to skip if already transfered
+      console.debug("syncLongMessage: init transfer");
       await longMessageCharacteristic.writeWithResponse(base64.fromByteArray(new Uint8Array([DataSync.PACKET_INIT_TRANSFER, ...md5value])));
       var offset = 0;
+      console.debug("syncLongMessage: uploading data");
       while (offset < data.length) {
         await longMessageCharacteristic.writeWithResponse(base64.fromByteArray(new Uint8Array([DataSync.PACKET_UPLOAD_MESSAGE, ...(data.slice(offset, offset+DataSync.packetSize))])));
         offset += DataSync.packetSize;
       }
+      console.debug("syncLongMessage: finalize message");
       await longMessageCharacteristic.writeWithResponse(base64.fromByteArray(new Uint8Array([DataSync.PACKET_FINALIZE_MESSAGE])));
       var retryCount = 0, success = false;
       while(retryCount<5 && !success) {
         if (retryCount>0) {
           await sleep(1000);
         }
+        console.debug("syncLongMessage: polling result status");
         const status = (await DataSync.readLongMessageStatus(longMessageCharacteristic)).status;
         if (status == DataSync.STATUS_VALIDATION_ERROR) {
           throw new Error("Validation failed.")
@@ -111,6 +118,7 @@ export default class DataSync {
       if (!success) {
         throw new Error("Validation timeout.")
       }
+      console.debug("syncLongMessage: executing callback");
       callback();
     } catch (e) {
       console.warn(e.message);
