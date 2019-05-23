@@ -27,6 +27,7 @@ import * as action from 'actions/AssignmentAction';
 const btnBackgroundTask = -1;
 const joystickSize = 180;
 
+const buttonVerticalOffsets = [25, -10, -25];
 const MaterialHeaderButton = props => (
   <HeaderButton 
     {...props} 
@@ -74,7 +75,8 @@ class ControllerComponent extends Component {
       assigningButton: null,
       joystickX: 0,
       joystickY: 0,
-      buttonsInput: 0
+      buttonsInput: 0,
+      pendingButtonsInput: 0
     };
   }
 
@@ -192,7 +194,7 @@ class ControllerComponent extends Component {
   };
 
   sendData = async () => {
-    const byteArray = new Uint8Array([
+    const base64Data = base64.fromByteArray(new Uint8Array([
       this.state.counter,
       this.interpolate(this.state.joystickX),
       this.interpolate(this.state.joystickY),
@@ -204,7 +206,7 @@ class ControllerComponent extends Component {
       0xff,
       0xff,
       0xff,
-      this.state.buttonsInput,
+      this.state.pendingButtonsInput,
       0xff,
       0xff,
       0xff,
@@ -213,15 +215,14 @@ class ControllerComponent extends Component {
       0xff,
       0xff,
       0xff
-    ]);
+    ]));
 
     this.setState({
-      counter: (this.state.counter >= 0xf) ? 0 : this.state.counter + 1
+      counter: (this.state.counter >= 0xf) ? 0 : this.state.counter + 1,
+      pendingButtonsInput: this.state.buttonsInput
     });
 
     try {
-      const base64Data = base64.fromByteArray(byteArray);
-      
       this.state.characteristics.periodicController.writeWithResponse(base64Data)
         .then()
         .catch(e => {
@@ -247,44 +248,48 @@ class ControllerComponent extends Component {
     }
   };
 
-  renderButton = btnId => this.state.settingsMode
-    ? (<TouchableOpacity 
-        style={styles.btnProgrammable} 
-        onPress={() => this.buttonPressed(btnId)}
-        onLongPress={() => this.promptUnassign(btnId)}
-      />)
-    : (<View
-        style={[styles.btnProgrammable, { opacity: this.opacityForButton(btnId) }]}
-        onMultiTouch={event => this.setBitForButton(btnId, ~~event.isActive)}
-      />);
-
   opacityForButton = btnId => (
     ((this.state.buttonsInput >> btnId) & 1) ? .2 : 1
   );
 
   setBitForButton = (btnId, bit) => {
     const clearMask = ~(1 << btnId);
+    
     const currentValue = this.state.buttonsInput;
+    const pendingValue = this.state.pendingButtonsInput;
 
-    this.setState({ buttonsInput: (currentValue & clearMask) | (bit << btnId) });
+    this.setState({ 
+      buttonsInput: (currentValue & clearMask) | (bit << btnId),
+      pendingButtonsInput: bit 
+        ? (pendingValue & clearMask) | (bit << btnId)
+        : pendingValue
+    });
   };
 
   renderButtons = () => (
     <View style={styles.btnContainer}>
-      <View style={[styles.btnContainerColumn, { top: 25 }]}>
-        {this.renderButton(0)}
-        {this.renderButton(1)}
-      </View>
-      <View style={[styles.btnContainerColumn, { top: -10 }]}>
-        {this.renderButton(2)}
-        {this.renderButton(3)}
-      </View>
-      <View style={[styles.btnContainerColumn, { top: -25 }]}>
-        {this.renderButton(4)}
-        {this.renderButton(5)}
-      </View>
+      {buttonVerticalOffsets.map((offset, index) => (
+        <View 
+          key={index}
+          style={[styles.btnContainerColumn, { top: offset }]}
+        >
+          {this.renderButton(index * 2)}
+          {this.renderButton(index * 2 + 1)}
+        </View>
+      ))}
     </View>
   );
+
+  renderButton = btnId => this.state.settingsMode
+  ? (<TouchableOpacity
+      style={styles.btnProgrammable} 
+      onPress={() => this.buttonPressed(btnId)}
+      onLongPress={() => this.promptUnassign(btnId)}
+    />)
+  : (<View
+      style={[styles.btnProgrammable, { opacity: this.opacityForButton(btnId) }]}
+      onMultiTouch={event => this.setBitForButton(btnId, ~~event.isActive)}
+    />);
 
   handleJoystickMove = event => {
     const x = event.coordinates.dx;

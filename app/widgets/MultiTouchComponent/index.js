@@ -309,7 +309,7 @@ export default class MultiTouchComponent extends Component {
               return child;
             }
 
-            const key = child.props.key || `touchable-${childIndex++}`;
+            const key = child.key || `touchable-${childIndex++}`;
             return this.cloneChild(key, child, childrenProps);
           })
         }
