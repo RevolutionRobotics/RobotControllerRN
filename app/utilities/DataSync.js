@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import base64 from 'base64-js';
-import AppConfig from 'utilities/AppConfig';
 import md5 from 'md5';
+import AppConfig from 'utilities/AppConfig';
 
 export default class DataSync {
 
@@ -23,7 +23,7 @@ export default class DataSync {
 
   static packetSize = 512;
 
-  static buildConfigurationMessage = (props) => {
+  static buildConfigurationMessage = props => {
     const assignments = props.buttonAssignments;
     const savedConfig = props.savedConfigList.find(config => (
       config.name === props.selectedName
@@ -34,7 +34,7 @@ export default class DataSync {
         assignments.some(assignment => assignment.blocklyName === blockly.name)
       ))
       .map(blockly => ({
-        pythonCode: blockly.pythonCode || '',
+        pythonCode: blockly.pythonCode || '',
         assignments: assignments
           .filter(assignment => assignment.blocklyName === blockly.name)
           .map(assignment => ({ 
@@ -43,10 +43,10 @@ export default class DataSync {
           }))
       }));
 
-    return encodeURIComponent(JSON.stringify({
+    return JSON.stringify({
       robotConfig: (savedConfig || AppConfig.defaultRobotConfig('')).ports,
       blocklyList: blocklies
-    })).split('').map(c => c.charCodeAt());
+    }).split('').map(c => c.charCodeAt());
   };
 
   static sync = (props, callback) => {  // TODO: rename. this is only doing configsending
@@ -56,15 +56,20 @@ export default class DataSync {
 
   static readLongMessageStatus = async (longMessageCharacteristic) => {
     const updatedLongMessageCharacteristic = await longMessageCharacteristic.read();
-    const rawbase64 = updatedLongMessageCharacteristic.value;
-    const data = base64.toByteArray(rawbase64);
-    var length = null, md5 = null;
+    const rawBase64 = updatedLongMessageCharacteristic.value;
+    const data = base64.toByteArray(rawBase64);
+
+    let length = null
+    let md5 = null;
+
     if (data.length >= 17) {
-      md5 = data.slice(1,17);
+      md5 = data.slice(1, 17);
     }
+
     if (data.length >= 21) {
-      length = (data[17]<<24) + (data[18]<<16) + (data[19]<<8) + data[20]
+      length = (data[17] << 24) + (data[18] << 16) + (data[19] << 8) + data[20];
     }
+
     return {
       status: data[0],
       md5: md5,
@@ -72,7 +77,7 @@ export default class DataSync {
     }
   }
 
-  static syncLongMessage = async (props, messagetype, data, callback) => {
+  static syncLongMessage = async (props, messageType, data, callback) => {
     const longMessageService = props.robotServices.find(item => (
       item.uuid === AppConfig.services.longMessage.id
     ));
@@ -82,42 +87,69 @@ export default class DataSync {
       return;
     }
 
-    const sleep = (waitTimeInMs) => new Promise(resolve => setTimeout(resolve, waitTimeInMs));
-    const longMessageCharacteristic = AppConfig.findCharacteristic(await longMessageService.characteristics(), 'longMessage', 'longMessages');
+    const sleep = (waitTimeInMs) => new Promise(resolve => {
+      setTimeout(resolve, waitTimeInMs);
+    });
+
+    const longMessageCharacteristic = AppConfig.findCharacteristic(
+      await longMessageService.characteristics(), 
+      'longMessage', 
+      'longMessages'
+    );
 
     try {
       console.debug("syncLongMessage: selecting message type");
-      await longMessageCharacteristic.writeWithResponse(base64.fromByteArray(new Uint8Array([DataSync.PACKET_SELECT_LONG_MESSAGE_TYPE, messagetype])));
+      await longMessageCharacteristic.writeWithResponse(base64.fromByteArray(
+        new Uint8Array([DataSync.PACKET_SELECT_LONG_MESSAGE_TYPE, messageType])
+      ));
+
       console.debug("syncLongMessage: calculating md5");
-      const md5value = md5(data, {asBytes:true});
-      // TODO read status to skip if already transfered
+      const md5value = md5(data, { asBytes: true });
+      // TODO read status to skip if already transferred
       console.debug("syncLongMessage: init transfer");
-      await longMessageCharacteristic.writeWithResponse(base64.fromByteArray(new Uint8Array([DataSync.PACKET_INIT_TRANSFER, ...md5value])));
-      var offset = 0;
+      await longMessageCharacteristic.writeWithResponse(base64.fromByteArray(
+        new Uint8Array([DataSync.PACKET_INIT_TRANSFER, ...md5value])
+      ));
+      
+      let offset = 0;
       console.debug("syncLongMessage: uploading data");
       while (offset < data.length) {
-        await longMessageCharacteristic.writeWithResponse(base64.fromByteArray(new Uint8Array([DataSync.PACKET_UPLOAD_MESSAGE, ...(data.slice(offset, offset+DataSync.packetSize))])));
+        await longMessageCharacteristic.writeWithResponse(
+          base64.fromByteArray(new Uint8Array([
+            DataSync.PACKET_UPLOAD_MESSAGE, 
+            ...(data.slice(offset, offset + DataSync.packetSize))
+          ])));
         offset += DataSync.packetSize;
       }
       console.debug("syncLongMessage: finalize message");
-      await longMessageCharacteristic.writeWithResponse(base64.fromByteArray(new Uint8Array([DataSync.PACKET_FINALIZE_MESSAGE])));
-      var retryCount = 0, success = false;
-      while(retryCount<5 && !success) {
-        if (retryCount>0) {
+      await longMessageCharacteristic.writeWithResponse(base64.fromByteArray(
+        new Uint8Array([DataSync.PACKET_FINALIZE_MESSAGE])
+      ));
+      
+      let retryCount = 0;
+      let success = false;
+      
+      while (retryCount < 5 && !success) {
+        if (retryCount > 0) {
           await sleep(1000);
         }
         console.debug("syncLongMessage: polling result status");
-        const status = (await DataSync.readLongMessageStatus(longMessageCharacteristic)).status;
+        const status = (await DataSync.readLongMessageStatus(
+          longMessageCharacteristic
+        )).status;
+
         if (status == DataSync.STATUS_VALIDATION_ERROR) {
-          throw new Error("Validation failed.")
+          throw new Error("Validation failed.");
         } else if (status == DataSync.STATUS_READY) {
           success = true;
         }
-        retryCount+=1;
+        retryCount += 1;
       }
+
       if (!success) {
-        throw new Error("Validation timeout.")
+        throw new Error("Validation timeout.");
       }
+
       console.debug("syncLongMessage: executing callback");
       callback();
     } catch (e) {

@@ -97,9 +97,12 @@ class ControllerComponent extends Component {
             }
           });
         });
+
+      this.syncData();
+    } else {
+      this.setState({ isSyncing: false });
     }
 
-    this.syncData();
     this.props.navigation.setParams({
       settingsPressed: this.settingsPressedHandler,
       buttonPressed: this.buttonPressed
@@ -121,23 +124,19 @@ class ControllerComponent extends Component {
   );
 
   syncData = () => {
-    if (this.props.robotServices) {
-      this.setState({
-        isSyncing: true
-      }, () => DataSync.sync(this.props, error => {
-        if (error) {
-          this.interruptSync();
-          return;
-        }
+    this.setState({
+      isSyncing: true
+    }, () => DataSync.sync(this.props, error => {
+      if (error) {
+        this.interruptSync();
+        return;
+      }
 
-        this.setState({
-          sendTimer: setInterval(this.sendData, 100), 
-          isSyncing: false
-        });
-      }));
-    } else {
-      this.setState({ isSyncing: false });
-    }
+      this.setState({
+        sendTimer: setInterval(this.sendData, 100), 
+        isSyncing: false
+      });
+    }));
   };
 
   renderSyncDialog = () => (
