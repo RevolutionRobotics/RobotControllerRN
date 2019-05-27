@@ -16,7 +16,7 @@ export default class App extends Component {
 
   componentDidMount() {
     if (Platform.OS === 'android') {
-      NativeModules.SoftNavModule.startSoftNavListener();
+      NativeModules.SofNavModule.startSoftNavListener();
     }
   }
 

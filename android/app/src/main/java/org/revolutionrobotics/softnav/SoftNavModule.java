@@ -25,7 +25,7 @@ public class SoftNavModule extends ReactContextBaseJavaModule {
     @Nonnull
     @Override
     public String getName() {
-        return "SoftNavModule";
+        return "SofNavModule";
     }
 
     @ReactMethod
