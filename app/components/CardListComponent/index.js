@@ -74,12 +74,8 @@ class CardListComponent extends Component {
 
   componentDidUpdate(prevProps) {
     if (prevProps.robotServices !== this.props.robotServices) {
-      const bleIcon = this.props.robotServices
-        ? 'bluetooth-connected'
-        : 'bluetooth';
-
       this.props.navigation.setParams({
-        bleIcon: bleIcon
+        bleIcon: this.bleIcon()
       });
     }
   }
@@ -87,7 +83,8 @@ class CardListComponent extends Component {
   componentDidMount() {
     this.props.navigation.setParams({
       bleManager: this.state.bleManager,
-      isConnected: this.isConnected
+      isConnected: this.isConnected,
+      bleIcon: this.bleIcon()
     });
 
     this.state.bleManager.onStateChange(state => {
@@ -96,6 +93,10 @@ class CardListComponent extends Component {
       });
     }, true)
   }
+
+  bleIcon = () => this.props.robotServices
+    ? 'bluetooth-connected'
+    : 'bluetooth';
 
   isConnected = () => {
     if (!this.props.robotServices) {
