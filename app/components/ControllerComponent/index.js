@@ -53,6 +53,15 @@ class ControllerComponent extends Component {
           onPress={() => navigation.getParam('buttonPressed')(btnBackgroundTask)} 
         />
         <Item 
+          title='ring led' 
+          iconName={'highlight'} 
+          style={{ display: navigation.getParam('settingsIcon') !== 'check' 
+            ? 'flex' 
+            : 'none' 
+          }}
+          onPress={() => navigation.getParam('ringLedPressed')()} 
+        />
+        <Item 
           title='settings' 
           iconName={navigation.getParam('settingsIcon') || 'settings'} 
           onPress={navigation.getParam('settingsPressed')} 
@@ -107,6 +116,7 @@ class ControllerComponent extends Component {
 
     this.props.navigation.setParams({
       settingsPressed: this.settingsPressedHandler,
+      ringLedPressed: this.ringLedPressed,
       buttonPressed: this.buttonPressed
     });
   }
@@ -189,6 +199,20 @@ class ControllerComponent extends Component {
       this.props.navigation.setParams({
         settingsIcon: this.state.settingsMode ? 'check' : 'settings'
       });
+    });
+  };
+
+  ringLedPressed = () => {
+    if (!this.props.robotServices) {
+      return;
+    }
+    
+    const pythonTest = 'exec("""\nif robot._ring_led:\n    robot._ring_led.set_scenario(RingLed.ColorWheel)\n    time.sleep(2)\n    robot._ring_led.set_scenario(RingLed.Off)\n""")';
+    const dataToSync = pythonTest.split('').map(c => c.charCodeAt());
+
+    this.setState({ isSyncing: true });
+    DataSync.syncLongMessage(this.props, 4, dataToSync, () => {
+      this.setState({ isSyncing: false });
     });
   };
 
