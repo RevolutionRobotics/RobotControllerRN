@@ -13,6 +13,7 @@
     "base64-js": "^1.3.0",
     "blockly": "github:google/blockly#master",
     "immutable": "^4.0.0-rc.12",
+    "md5": "^2.2.1",
     "react": "16.6.3",
     "react-native": "0.59.8",
     "react-native-ble-plx": "^1.0.2",
