@@ -72,18 +72,16 @@ class CardListComponent extends Component {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (this.props.robotServices === nextProps.robotServices) {
-      return;
+  componentDidUpdate(prevProps) {
+    if (prevProps.robotServices !== this.props.robotServices) {
+      const bleIcon = this.props.robotServices
+        ? 'bluetooth-connected'
+        : 'bluetooth';
+
+      this.props.navigation.setParams({
+        bleIcon: bleIcon
+      });
     }
-
-    const bleIcon = (nextProps.robotServices) 
-      ? 'bluetooth-connected' 
-      : 'bluetooth';
-
-    this.props.navigation.setParams({
-      bleIcon: bleIcon
-    })
   }
 
   componentDidMount() {
