@@ -1,6 +1,6 @@
 export default class StateUtils {
 
-  static setStateDeep(state, value, path) {
+  static setStateDeep = (state, value, path) => {
     const key = path[0];
     const nextPath = path.slice(1);
 

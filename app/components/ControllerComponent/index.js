@@ -22,7 +22,8 @@ import MultiTouchComponent from 'widgets/MultiTouchComponent';
 import ListSelectionDialog from 'widgets/ListSelectionDialog';
 import { connect } from 'react-redux';
 import styles from './styles';
-import * as action from 'actions/AssignmentAction';
+import * as bleAction from 'actions/BleAction';
+import * as assignmentAction from 'actions/AssignmentAction';
 
 const btnBackgroundTask = -1;
 const joystickSize = 180;
@@ -65,6 +66,7 @@ class ControllerComponent extends Component {
     super(props);
 
     this.state = {
+      bleManager: props.navigation.state.params.bleManager,
       characteristics: {},
       layoutId: 0,
       isSyncing: false,
@@ -82,25 +84,16 @@ class ControllerComponent extends Component {
 
   componentDidMount() {
     if (this.props.robotServices) {
-      const liveMessageService = this.props.robotServices.find(item => (
-        item.uuid === AppConfig.services.liveMessage.id
-      ));
+      this.startSyncing();
+    } else if (this.props.lastDevice) {
+      this.state.bleManager.state()
+        .then(state => {
+          if (state === 'PoweredOn') {
+            this.connectLastDevice();
+          }
 
-      if (!liveMessageService) {
-        return;
-      }
-
-      liveMessageService.characteristics()
-        .then(list => {
-          this.setState({
-            characteristics: {
-              ...this.state.characteristics,
-              periodicController: this.findCharacteristic(list, 'periodicController')
-            }
-          });
+          this.setState({ isSyncing: false });
         });
-
-      this.syncData();
     } else {
       this.setState({ isSyncing: false });
     }
@@ -115,6 +108,28 @@ class ControllerComponent extends Component {
     this.stopSending();
   }
 
+  startSyncing = () => {
+    const liveMessageService = this.props.robotServices.find(item => (
+      item.uuid === AppConfig.services.liveMessage.id
+    ));
+
+    if (!liveMessageService) {
+      return;
+    }
+
+    liveMessageService.characteristics()
+      .then(list => {
+        this.setState({
+          characteristics: {
+            ...this.state.characteristics,
+            periodicController: this.findCharacteristic(list, 'periodicController')
+          }
+        });
+      });
+
+    this.syncData();
+  };
+
   stopSending = () => {
     if (this.state.sendTimer) {
       clearInterval(this.state.sendTimer);
@@ -124,6 +139,28 @@ class ControllerComponent extends Component {
   findCharacteristic = (list, id) => (
     AppConfig.findCharacteristic(list, 'liveMessage', id)
   );
+
+  connectLastDevice = () => {
+    const manager = this.state.bleManager;
+    const lastDevice = this.props.lastDevice;
+
+    manager.connectToDevice(lastDevice, {
+      autoConnect: true
+    }).then(device => {
+      manager.discoverAllServicesAndCharacteristicsForDevice(lastDevice)
+        .then(deviceWithServices => {
+          deviceWithServices.services()
+            .then(services => {
+              this.props.setRobotServices(services);
+              device.onDisconnected(() => {
+                this.props.setRobotServices(null);
+              });
+
+              this.setState({ isSyncing: true }, this.startSyncing);
+            });
+        });
+    });
+  };
 
   syncData = () => {
     this.setState({
@@ -407,12 +444,14 @@ const mapStateToProps = state => ({
   savedConfigList: state.RobotConfigReducer.get('savedConfigList'),
   selectedName: state.RobotConfigReducer.get('selectedName'),
   savedList: state.BlocklyReducer.get('savedList'),
-  buttonAssignments: state.ButtonAssignmentReducer.get('assignments')
+  buttonAssignments: state.ButtonAssignmentReducer.get('assignments'),
+  lastDevice: state.BleReducer.get('lastDevice')
 });
 
 const mapDispatchToProps = dispatch => ({
-  addButtonAssignment: (layoutId, btnId, blocklyName) => dispatch(action.addButtonAssignment(layoutId, btnId, blocklyName)),
-  removeButtonAssignment: (layoutId, btnId) => dispatch(action.removeButtonAssignment(layoutId, btnId))
+  addButtonAssignment: (layoutId, btnId, blocklyName) => dispatch(assignmentAction.addButtonAssignment(layoutId, btnId, blocklyName)),
+  removeButtonAssignment: (layoutId, btnId) => dispatch(assignmentAction.removeButtonAssignment(layoutId, btnId)),
+  setRobotServices: services => dispatch(bleAction.setRobotServices(services))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ControllerComponent);

@@ -129,7 +129,9 @@ class CardListComponent extends Component {
   renderItem = ({item}) => (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => this.props.navigation.navigate(item.navigation)}
+      onPress={() => this.props.navigation.navigate(item.navigation, {
+        bleManager: this.state.bleManager
+      })}
     >
       <ImageBackground
         source={item.background}
