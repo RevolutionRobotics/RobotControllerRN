@@ -14,7 +14,6 @@ import { SafeAreaView } from 'react-navigation';
 import { connect } from 'react-redux';
 import styles from './styles';
 import { name as appName } from '../../../app.json';
-import ArrayUtils from 'utilities/ArrayUtils';
 import AppConfig from 'utilities/AppConfig';
 import * as action from 'actions/BleAction';
 
@@ -103,10 +102,12 @@ class BleSettingsComponent extends Component {
         removeClippedSubviews={true}
       />);
 
-  renderItem = ({item, index}) => (
-    <TouchableOpacity style={styles.deviceItem} onPress={() => this.connect(item)}>
+  renderItem = ({item}) => (
+    <TouchableOpacity style={styles.deviceItem} onPress={() => {
+      this.connect(item);
+    }}>
       <Text style={styles.deviceItemTitle}>
-        {item.localName || item.name || item.id}
+        {item.localName || item.name || item.id}
       </Text>
     </TouchableOpacity>
   );
@@ -186,17 +187,17 @@ class BleSettingsComponent extends Component {
     !!services?.some(item => item === AppConfig.services.liveMessage.id)
   );
 
-  connect = device => {
+  connect = foundDevice => {
     // Stop scanning as it's not necessary if you are scanning for one device.
     this.manager.stopDeviceScan();
 
     this.setState({
-      device: device,
+      device: foundDevice,
       connectingDialogVisible: true
     });
 
     // Proceed with connection.
-    device.connect()
+    foundDevice.connect()
       .then(device => device.discoverAllServicesAndCharacteristics(device.id))
       .then(device => {
         device.services()
@@ -207,6 +208,7 @@ class BleSettingsComponent extends Component {
                 this.props.setRobotServices(null);
               });
 
+              this.props.setLastDevice(foundDevice);
               this.setState({
                 connectingDialogVisible: false
               }, this.props.navigation.goBack);
@@ -229,7 +231,8 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  setRobotServices: services => dispatch(action.setRobotServices(services))
+  setRobotServices: services => dispatch(action.setRobotServices(services)),
+  setLastDevice: device => dispatch(action.setLastDevice(device))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(BleSettingsComponent);
