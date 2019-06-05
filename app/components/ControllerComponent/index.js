@@ -233,7 +233,7 @@ class ControllerComponent extends Component {
     const base64Data = base64.fromByteArray(new Uint8Array([
       this.state.counter,
       this.interpolate(this.state.joystickX),
-      this.interpolate(this.state.joystickY),
+      this.interpolate(-this.state.joystickY),
       0xff,
       0xff,
       0xff,

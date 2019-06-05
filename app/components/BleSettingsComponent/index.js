@@ -169,7 +169,7 @@ class BleSettingsComponent extends Component {
           element.id === device.id
         ));
 
-        if (deviceInList || !this.isRobotService(device.serviceUUIDs)) { //device.serviceUUIDs?.includes(this.state.uartServiceId)) {
+        if (deviceInList || !this.isRobotService(device.serviceUUIDs)) {
           return;
         }
       }
@@ -208,7 +208,7 @@ class BleSettingsComponent extends Component {
                 this.props.setRobotServices(null);
               });
 
-              this.props.setLastDevice(foundDevice);
+              this.props.setLastDevice(foundDevice.id);
               this.setState({
                 connectingDialogVisible: false
               }, this.props.navigation.goBack);
