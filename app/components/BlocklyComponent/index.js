@@ -12,8 +12,7 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { connect } from 'react-redux';
-import { HeaderBackButton } from 'react-navigation';
-import styles from './styles';
+import { HeaderBackButton, SafeAreaView } from 'react-navigation';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import HeaderButtons, { 
   HeaderButton,
@@ -24,7 +23,10 @@ import * as action from 'actions/BlocklyAction';
 import InputDialog from 'widgets/InputDialog';
 import ListSelectionDialog from 'widgets/ListSelectionDialog';
 
-const debugMode = false;
+import styles from './styles';
+import bridge from './blocklyBridge';
+
+const debugMode = true;
 const MaterialHeaderButton = props => (
   <HeaderButton {...props} IconComponent={MaterialIcons} iconSize={23} color="white" />
 );
@@ -313,13 +315,21 @@ class BlocklyComponent extends Component {
   );
 
   render() {
-    const debugPath = 'http://localhost:8083/index.html';
+    const htmlFile =  'Blockly/webview.html';
+    const debugPath = `http://192.168.253.226:8080/${htmlFile}`;
     const htmlPath = (Platform.OS === 'android') 
-      ? 'file:///android_asset/blockly/index.html' 
-      : './blockly/index.html';
+      ? `file:///android_asset/blockly/${htmlFile}` 
+      : `./blockly/${htmlFile}`;
 
     return (
-      <View style={styles.safeAreaContainer}>
+      <SafeAreaView 
+        forceInset={{ 
+          left: 'always', 
+          bottom: 'never',
+          right: 'never' 
+        }} 
+        style={styles.safeAreaContainer}
+      >
         <View style={styles.blockly}>
           <WebView
             ref={webViewRef => (this.webView = webViewRef)}
@@ -328,14 +338,14 @@ class BlocklyComponent extends Component {
             onMessage={this.onWebViewMessage}
             javaScriptEnabled={true}
             domStorageEnabled={true}
-            injectedJavaScript={'document.body.classList.add("webview")'}
+            injectedJavaScript={bridge()}
             useWebKit={true}
           />
           {this.renderSaveDialog()}
           {this.renderOpenDialog()}
           {this.renderWebInputDialog()}
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 }
