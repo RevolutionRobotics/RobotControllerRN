@@ -5,7 +5,6 @@ export default StyleSheet.create({
   inputDialogBackdrop: dialogStyle.dialogBackdrop,
   inputDialogContainer: {
     width: 300,
-    height: 200,
     ...dialogStyle.dialogContainer
   },
   inputDialogTitleContainer: {
