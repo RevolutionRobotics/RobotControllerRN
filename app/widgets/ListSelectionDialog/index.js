@@ -29,11 +29,11 @@ export default class ListSelectionDialog extends Component {
     super(props);
   }
 
-  renderListDialogItem = ({item}) => (
+  renderListDialogItem = ({item, index}) => (
     <TouchableOpacity 
       key={item.key}
       style={styles.listDialogItem}
-      onPress={() => this.props.onItemSelected(item)}
+      onPress={() => this.props.onItemSelected(item, index)}
     >
       <Text style={styles.listDialogItemLabel}>{item.name}</Text>
     </TouchableOpacity>

@@ -57,14 +57,14 @@ const bridgeCode = () => {
 
     if (messageData.dialogValue) {
       Blockly.onDialogInput(messageData.dialogValue);
-    } else {
+    } else if (messageData.domValue) {
       Blockly.mainWorkspace.clear();
-    }
 
-    if (messageData.domValue) {
       var dom = Blockly.Xml.textToDom(messageData.domValue);
       Blockly.Xml.domToWorkspace(dom, workspace);
-    } 
+    } else if (messageData.clear) {
+      Blockly.mainWorkspace.clear();
+    }
   });
 };
 
