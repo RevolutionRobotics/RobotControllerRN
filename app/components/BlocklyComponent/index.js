@@ -27,7 +27,7 @@ import SliderDialog from 'widgets/SliderDialog';
 import styles from './styles';
 import bridge from './blocklyBridge';
 
-const debugMode = true;
+const debugMode = false;
 const MaterialHeaderButton = props => (
   <HeaderButton {...props} IconComponent={MaterialIcons} iconSize={23} color="white" />
 );
