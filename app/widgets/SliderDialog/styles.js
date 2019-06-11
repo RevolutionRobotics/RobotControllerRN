@@ -23,14 +23,12 @@ export default StyleSheet.create({
     height: 60, 
     flexDirection: 'row'
   },
-  textInput: {
-    flex: 1,
-    color: 'white',
-    ...dialogStyle.dialogContainer,
-    height: 40,
-    marginTop: 5,
-    paddingHorizontal: 15,
-    paddingVertical: 0
+  sliderLabel: { 
+    color: 'white', 
+    marginTop: 20 
+  },
+  sliderInput: {
+    width: '100%'
   },
   inputDialogButton: defaultValues.dialogButton,
   inputDialogButtonLabel: {

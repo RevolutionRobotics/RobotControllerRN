@@ -12,8 +12,7 @@ import {
 } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { connect } from 'react-redux';
-import { HeaderBackButton } from 'react-navigation';
-import styles from './styles';
+import { HeaderBackButton, SafeAreaView } from 'react-navigation';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import HeaderButtons, { 
   HeaderButton,
@@ -23,6 +22,10 @@ import AlertUtils from 'utilities/AlertUtils';
 import * as action from 'actions/BlocklyAction';
 import InputDialog from 'widgets/InputDialog';
 import ListSelectionDialog from 'widgets/ListSelectionDialog';
+import SliderDialog from 'widgets/SliderDialog';
+
+import styles from './styles';
+import bridge from './blocklyBridge';
 
 const debugMode = false;
 const MaterialHeaderButton = props => (
@@ -70,11 +73,20 @@ class BlocklyComponent extends Component {
       saveDialogVisible: false,
       saveInputValue: '',
       unsavedChanges: false,
+      changedProject: false,
       xmlData: '',
       pythonCode: '',
       webInputDialogVisible: false,
       webInputDialogTitle: '',
-      webInputDialogValue: ''
+      webInputDialogValue: '',
+      webSelectionDialogVisible: false,
+      webSelectionDialogItems: [],
+      webSelectionDialogTitle: '',
+      webSliderDialogTitle: '',
+      webSliderDialogValue: 0,
+      webSliderDialogMinValue: 0,
+      webSliderDialogMaxValue: 1,
+      webSliderDialogVisible: false
     };
   }
 
@@ -103,21 +115,40 @@ class BlocklyComponent extends Component {
   onWebViewMessage = event => {
     const data = JSON.parse(event.nativeEvent.data);
 
-    if (data.inputDialog) {
-      this.setState({ 
-        webInputDialogTitle: data.inputDialog.message,
-        webInputDialogValue: data.inputDialog.defaultValue,
-        webInputDialogVisible: true
+    if (!data.inputDialog) {
+      const changedProject = this.state.changedProject;
+      this.setState({
+        unsavedChanges: !changedProject,
+        changedProject: false,
+        xmlData: data.xmlData,
+        pythonCode: data.pythonCode
       });
 
       return;
     }
 
-    this.setState({
-      unsavedChanges: true,
-      xmlData: data.xmlData,
-      pythonCode: data.pythonCode
-    });
+    const dialogData = JSON.parse(data.inputDialog.defaultValue);
+    if ('defaultInput' in dialogData) {
+      this.setState({ 
+        webInputDialogTitle: dialogData.title,
+        webInputDialogValue: dialogData.defaultInput,
+        webInputDialogVisible: true
+      });
+    } else if ('defaultKey' in dialogData) {
+      this.setState({
+        webSelectionDialogTitle: dialogData.title,
+        webSelectionDialogItems: dialogData.options,
+        webSelectionDialogVisible: true
+      });
+    } else if ('defaultValue' in dialogData) {
+      this.setState({
+        webSliderDialogTitle: dialogData.title,
+        webSliderDialogValue: dialogData.defaultValue,
+        webSliderDialogMinValue: dialogData.minimum,
+        webSliderDialogMaxValue: dialogData.maximum,
+        webSliderDialogVisible: true
+      });
+    }
   };
 
   renderWebInputDialog = () => (
@@ -131,6 +162,44 @@ class BlocklyComponent extends Component {
       }}
       onValueSet={value => {
         this.setState({ webInputDialogVisible: false });
+        this.postData({ dialogValue: value });
+      }}
+    />
+  );
+
+  renderWebSelectionDialog = () => (
+    <ListSelectionDialog 
+      dialogTitle={this.state.webSelectionDialogTitle}
+      visible={this.state.webSelectionDialogVisible}
+      listItems={this.state.webSelectionDialogItems.map(item => ({
+        name: item.value
+      }))}
+      onRequestClose={() => {
+        this.setState({ webSelectionDialogVisible: false });
+        this.postData({ dialogValue: null });
+      }}
+      onItemSelected={(_item, index) => {
+        this.setState({ webSelectionDialogVisible: false });
+        this.postData({ 
+          dialogValue: this.state.webSelectionDialogItems[index].key 
+        });
+      }}
+    />
+  );
+
+  renderWebSliderDialog = () => (
+    <SliderDialog
+      dialogTitle={this.state.webSliderDialogTitle}
+      value={parseFloat(this.state.webSliderDialogValue) || 0}
+      minValue={this.state.webSliderDialogMinValue}
+      maxValue={this.state.webSliderDialogMaxValue}
+      visible={this.state.webSliderDialogVisible}
+      onRequestClose={() => {
+        this.setState({ webSliderDialogVisible: false });
+        this.postData({ dialogValue: null });
+      }}
+      onValueSet={value => {
+        this.setState({ webSliderDialogVisible: false });
         this.postData({ dialogValue: value });
       }}
     />
@@ -157,9 +226,10 @@ class BlocklyComponent extends Component {
     this.promptUnsaved(() => this.setState({
       currentName: '',
       unsavedChanges: false,
+      changedProject: true,
       xmlData: '',
       pythonCode: ''
-    }, () => this.postData({})));
+    }, () => this.postData({ clear: true })));
   };
 
   openPressed = () => {
@@ -245,6 +315,9 @@ class BlocklyComponent extends Component {
     if (!this.state.unsavedChanges) {
       callback();
       return;
+    } else if (this.state.changedProject) {
+      this.setState({ changedProject: false }, callback);
+      return;
     }
 
     const blocklyName = this.state.currentName || 'Blockly';
@@ -305,7 +378,8 @@ class BlocklyComponent extends Component {
       onItemSelected={item => {
         this.setState({ 
           currentName: item.name,
-          openDialogVisible: false
+          openDialogVisible: false,
+          changedProject: true
         }, () => this.postData({ domValue: item.xmlData }));
       }}
       onRequestClose={() => this.setState({ openDialogVisible: false })}
@@ -313,13 +387,21 @@ class BlocklyComponent extends Component {
   );
 
   render() {
-    const debugPath = 'http://localhost:8083/index.html';
+    const htmlFile =  'Blockly/webview.html';
+    const debugPath = `http://192.168.253.226:8080/${htmlFile}`;
     const htmlPath = (Platform.OS === 'android') 
-      ? 'file:///android_asset/blockly/index.html' 
-      : './blockly/index.html';
+      ? `file:///android_asset/blockly/${htmlFile}` 
+      : `./blockly/${htmlFile}`;
 
     return (
-      <View style={styles.safeAreaContainer}>
+      <SafeAreaView 
+        forceInset={{ 
+          left: 'always', 
+          bottom: 'never',
+          right: 'never' 
+        }} 
+        style={styles.safeAreaContainer}
+      >
         <View style={styles.blockly}>
           <WebView
             ref={webViewRef => (this.webView = webViewRef)}
@@ -328,14 +410,16 @@ class BlocklyComponent extends Component {
             onMessage={this.onWebViewMessage}
             javaScriptEnabled={true}
             domStorageEnabled={true}
-            injectedJavaScript={'document.body.classList.add("webview")'}
+            injectedJavaScript={bridge()}
             useWebKit={true}
           />
           {this.renderSaveDialog()}
           {this.renderOpenDialog()}
           {this.renderWebInputDialog()}
+          {this.renderWebSelectionDialog()}
+          {this.renderWebSliderDialog()}
         </View>
-      </View>
+      </SafeAreaView>
     );
   }
 }

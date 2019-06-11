@@ -1,0 +1,3 @@
+[submodule "assets/blockly"]
+	path = assets/blockly
+	url = git@gitlab.supercharge.io:revolutionrobotics/blockly-js.git
