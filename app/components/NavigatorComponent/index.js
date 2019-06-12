@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { StatusBar, View } from 'react-native';
-import AsyncStorage from '@react-native-community/async-storage';
 import { createStackNavigator, createAppContainer } from 'react-navigation';
 import { connect } from 'react-redux';
 
@@ -13,9 +12,12 @@ import CodeViewComponent from 'components/CodeViewComponent';
 
 import styles from './styles';
 
+import CacheUtils from 'utilities/CacheUtils';
+
 import * as assignmentAction from 'actions/AssignmentAction';
 import * as blocklyAction from 'actions/BlocklyAction';
 import * as configAction from 'actions/RobotConfigAction';
+import * as bleAction from 'actions/BleAction';
 
 const RootNavigator = createStackNavigator({
   CardList: { screen: CardListComponent },
@@ -36,22 +38,12 @@ const RootNavigator = createStackNavigator({
 });
 
 const AppContainer = createAppContainer(RootNavigator);
-const cachedData = [
-  { key: 'assignments',     action: 'setAssignments'     },
-  { key: 'savedList',       action: 'setBlocklyList'     },
-  { key: 'savedConfigList', action: 'setRobotConfigList' }
-];
 
 class NavigatorComponent extends Component {
 
   constructor(props) {
     super(props);
-    
-    cachedData.forEach(item => AsyncStorage.getItem(item.key).then(data => {
-      if (data) {
-        this.props[item.action](JSON.parse(data));
-      }
-    }));
+    CacheUtils.readCache(props);
   }
 
   render() {
@@ -75,7 +67,8 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
   setAssignments: assignments => dispatch(assignmentAction.setAssignments(assignments)),
   setBlocklyList: list => dispatch(blocklyAction.setBlocklyList(list)),
-  setRobotConfigList: list => dispatch(configAction.setRobotConfigList(list))
+  setRobotConfigList: list => dispatch(configAction.setRobotConfigList(list)),
+  setLastDevice: device => dispatch(bleAction.setLastDevice(device))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(NavigatorComponent);

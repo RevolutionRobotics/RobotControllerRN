@@ -4,7 +4,7 @@ import { defaultValues, dialogStyle } from 'components/appStyles';
 export default StyleSheet.create({
   safeAreaContainer: {
     flex: 1,
-    backgroundColor: '#dddddd'
+    backgroundColor: 'black'
   },
   container: {
     flex: 1,

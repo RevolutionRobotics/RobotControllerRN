@@ -72,24 +72,19 @@ class CardListComponent extends Component {
     };
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (this.props.robotServices === nextProps.robotServices) {
-      return;
+  componentDidUpdate(prevProps) {
+    if (prevProps.robotServices !== this.props.robotServices) {
+      this.props.navigation.setParams({
+        bleIcon: this.bleIcon()
+      });
     }
-
-    const bleIcon = (nextProps.robotServices) 
-      ? 'bluetooth-connected' 
-      : 'bluetooth';
-
-    this.props.navigation.setParams({
-      bleIcon: bleIcon
-    })
   }
 
   componentDidMount() {
     this.props.navigation.setParams({
       bleManager: this.state.bleManager,
-      isConnected: this.isConnected
+      isConnected: this.isConnected,
+      bleIcon: this.bleIcon()
     });
 
     this.state.bleManager.onStateChange(state => {
@@ -98,6 +93,10 @@ class CardListComponent extends Component {
       });
     }, true)
   }
+
+  bleIcon = () => this.props.robotServices
+    ? 'bluetooth-connected'
+    : 'bluetooth';
 
   isConnected = () => {
     if (!this.props.robotServices) {
@@ -130,7 +129,9 @@ class CardListComponent extends Component {
   renderItem = ({item}) => (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => this.props.navigation.navigate(item.navigation)}
+      onPress={() => this.props.navigation.navigate(item.navigation, {
+        bleManager: this.state.bleManager
+      })}
     >
       <ImageBackground
         source={item.background}

@@ -22,11 +22,13 @@ import MultiTouchComponent from 'widgets/MultiTouchComponent';
 import ListSelectionDialog from 'widgets/ListSelectionDialog';
 import { connect } from 'react-redux';
 import styles from './styles';
-import * as action from 'actions/AssignmentAction';
+import * as bleAction from 'actions/BleAction';
+import * as assignmentAction from 'actions/AssignmentAction';
 
 const btnBackgroundTask = -1;
 const joystickSize = 180;
 
+const buttonVerticalOffsets = [25, -10, -25];
 const MaterialHeaderButton = props => (
   <HeaderButton 
     {...props} 
@@ -64,6 +66,7 @@ class ControllerComponent extends Component {
     super(props);
 
     this.state = {
+      bleManager: props.navigation.state.params.bleManager,
       characteristics: {},
       layoutId: 0,
       isSyncing: false,
@@ -74,32 +77,27 @@ class ControllerComponent extends Component {
       assigningButton: null,
       joystickX: 0,
       joystickY: 0,
-      buttonsInput: 0
+      buttonsInput: 0,
+      pendingButtonsInput: 0
     };
   }
 
   componentDidMount() {
     if (this.props.robotServices) {
-      const liveMessageService = this.props.robotServices.find(item => (
-        item.uuid === AppConfig.services.liveMessage.id
-      ));
+      this.startSyncing();
+    } else if (this.props.lastDevice) {
+      this.state.bleManager.state()
+        .then(state => {
+          if (state === 'PoweredOn') {
+            this.connectLastDevice();
+          }
 
-      if (!liveMessageService) {
-        return;
-      }
-
-      liveMessageService.characteristics()
-        .then(list => {
-          this.setState({
-            characteristics: {
-              ...this.state.characteristics,
-              periodicController: this.findCharacteristic(list, 'periodicController')
-            }
-          });
+          this.setState({ isSyncing: false });
         });
+    } else {
+      this.setState({ isSyncing: false });
     }
 
-    this.syncData();
     this.props.navigation.setParams({
       settingsPressed: this.settingsPressedHandler,
       buttonPressed: this.buttonPressed
@@ -109,6 +107,28 @@ class ControllerComponent extends Component {
   componentWillUnmount() {
     this.stopSending();
   }
+
+  startSyncing = () => {
+    const liveMessageService = this.props.robotServices.find(item => (
+      item.uuid === AppConfig.services.liveMessage.id
+    ));
+
+    if (!liveMessageService) {
+      return;
+    }
+
+    liveMessageService.characteristics()
+      .then(list => {
+        this.setState({
+          characteristics: {
+            ...this.state.characteristics,
+            periodicController: this.findCharacteristic(list, 'periodicController')
+          }
+        });
+      });
+
+    this.syncData();
+  };
 
   stopSending = () => {
     if (this.state.sendTimer) {
@@ -120,24 +140,42 @@ class ControllerComponent extends Component {
     AppConfig.findCharacteristic(list, 'liveMessage', id)
   );
 
-  syncData = () => {
-    if (this.props.robotServices) {
-      this.setState({
-        isSyncing: true
-      }, () => DataSync.sync(this.props, error => {
-        if (error) {
-          this.interruptSync();
-          return;
-        }
+  connectLastDevice = () => {
+    const manager = this.state.bleManager;
+    const lastDevice = this.props.lastDevice;
 
-        this.setState({
-          sendTimer: setInterval(this.sendData, 100), 
-          isSyncing: false
+    manager.connectToDevice(lastDevice, {
+      autoConnect: true
+    }).then(device => {
+      manager.discoverAllServicesAndCharacteristicsForDevice(lastDevice)
+        .then(deviceWithServices => {
+          deviceWithServices.services()
+            .then(services => {
+              this.props.setRobotServices(services);
+              device.onDisconnected(() => {
+                this.props.setRobotServices(null);
+              });
+
+              this.setState({ isSyncing: true }, this.startSyncing);
+            });
         });
-      }));
-    } else {
-      this.setState({ isSyncing: false });
-    }
+    });
+  };
+
+  syncData = () => {
+    this.setState({
+      isSyncing: true
+    }, () => DataSync.sync(this.props, error => {
+      if (error) {
+        this.interruptSync();
+        return;
+      }
+
+      this.setState({
+        sendTimer: setInterval(this.sendData, 100), 
+        isSyncing: false
+      });
+    }));
   };
 
   renderSyncDialog = () => (
@@ -192,10 +230,10 @@ class ControllerComponent extends Component {
   };
 
   sendData = async () => {
-    const byteArray = new Uint8Array([
+    const base64Data = base64.fromByteArray(new Uint8Array([
       this.state.counter,
       this.interpolate(this.state.joystickX),
-      this.interpolate(this.state.joystickY),
+      this.interpolate(-this.state.joystickY),
       0xff,
       0xff,
       0xff,
@@ -204,7 +242,7 @@ class ControllerComponent extends Component {
       0xff,
       0xff,
       0xff,
-      this.state.buttonsInput,
+      this.state.pendingButtonsInput,
       0xff,
       0xff,
       0xff,
@@ -213,15 +251,14 @@ class ControllerComponent extends Component {
       0xff,
       0xff,
       0xff
-    ]);
+    ]));
 
     this.setState({
-      counter: (this.state.counter >= 0xf) ? 0 : this.state.counter + 1
+      counter: (this.state.counter >= 0xf) ? 0 : this.state.counter + 1,
+      pendingButtonsInput: this.state.buttonsInput
     });
 
     try {
-      const base64Data = base64.fromByteArray(byteArray);
-      
       this.state.characteristics.periodicController.writeWithResponse(base64Data)
         .then()
         .catch(e => {
@@ -247,44 +284,48 @@ class ControllerComponent extends Component {
     }
   };
 
-  renderButton = btnId => this.state.settingsMode
-    ? (<TouchableOpacity 
-        style={styles.btnProgrammable} 
-        onPress={() => this.buttonPressed(btnId)}
-        onLongPress={() => this.promptUnassign(btnId)}
-      />)
-    : (<View
-        style={[styles.btnProgrammable, { opacity: this.opacityForButton(btnId) }]}
-        onMultiTouch={event => this.setBitForButton(btnId, ~~event.isActive)}
-      />);
-
   opacityForButton = btnId => (
     ((this.state.buttonsInput >> btnId) & 1) ? .2 : 1
   );
 
   setBitForButton = (btnId, bit) => {
     const clearMask = ~(1 << btnId);
+    
     const currentValue = this.state.buttonsInput;
+    const pendingValue = this.state.pendingButtonsInput;
 
-    this.setState({ buttonsInput: (currentValue & clearMask) | (bit << btnId) });
+    this.setState({ 
+      buttonsInput: (currentValue & clearMask) | (bit << btnId),
+      pendingButtonsInput: bit 
+        ? (pendingValue & clearMask) | (bit << btnId)
+        : pendingValue
+    });
   };
 
   renderButtons = () => (
     <View style={styles.btnContainer}>
-      <View style={[styles.btnContainerColumn, { top: 25 }]}>
-        {this.renderButton(0)}
-        {this.renderButton(1)}
-      </View>
-      <View style={[styles.btnContainerColumn, { top: -10 }]}>
-        {this.renderButton(2)}
-        {this.renderButton(3)}
-      </View>
-      <View style={[styles.btnContainerColumn, { top: -25 }]}>
-        {this.renderButton(4)}
-        {this.renderButton(5)}
-      </View>
+      {buttonVerticalOffsets.map((offset, index) => (
+        <View 
+          key={index}
+          style={[styles.btnContainerColumn, { top: offset }]}
+        >
+          {this.renderButton(index * 2)}
+          {this.renderButton(index * 2 + 1)}
+        </View>
+      ))}
     </View>
   );
+
+  renderButton = btnId => this.state.settingsMode
+  ? (<TouchableOpacity
+      style={styles.btnProgrammable} 
+      onPress={() => this.buttonPressed(btnId)}
+      onLongPress={() => this.promptUnassign(btnId)}
+    />)
+  : (<View
+      style={[styles.btnProgrammable, { opacity: this.opacityForButton(btnId) }]}
+      onMultiTouch={event => this.setBitForButton(btnId, ~~event.isActive)}
+    />);
 
   handleJoystickMove = event => {
     const x = event.coordinates.dx;
@@ -403,12 +444,14 @@ const mapStateToProps = state => ({
   savedConfigList: state.RobotConfigReducer.get('savedConfigList'),
   selectedName: state.RobotConfigReducer.get('selectedName'),
   savedList: state.BlocklyReducer.get('savedList'),
-  buttonAssignments: state.ButtonAssignmentReducer.get('assignments')
+  buttonAssignments: state.ButtonAssignmentReducer.get('assignments'),
+  lastDevice: state.BleReducer.get('lastDevice')
 });
 
 const mapDispatchToProps = dispatch => ({
-  addButtonAssignment: (layoutId, btnId, blocklyName) => dispatch(action.addButtonAssignment(layoutId, btnId, blocklyName)),
-  removeButtonAssignment: (layoutId, btnId) => dispatch(action.removeButtonAssignment(layoutId, btnId))
+  addButtonAssignment: (layoutId, btnId, blocklyName) => dispatch(assignmentAction.addButtonAssignment(layoutId, btnId, blocklyName)),
+  removeButtonAssignment: (layoutId, btnId) => dispatch(assignmentAction.removeButtonAssignment(layoutId, btnId)),
+  setRobotServices: services => dispatch(bleAction.setRobotServices(services))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(ControllerComponent);
