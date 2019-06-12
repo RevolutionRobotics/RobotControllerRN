@@ -15,6 +15,8 @@ export default StyleSheet.create({
   },
   listDialogTitle: {
     ...defaultValues.dialogTitle,
+    flex: 1,
+    paddingHorizontal: 10
   },
   listDialogItem: {
     padding: 15

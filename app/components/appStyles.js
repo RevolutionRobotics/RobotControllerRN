@@ -46,10 +46,8 @@ const defaultValues = {
     opacity: 0.9
   },
   dialogTitle: {
-    flex: 1,
     fontSize: 20,
     marginBottom: 15,
-    paddingHorizontal: 10,
     color: 'white'
   },
   dialogButtonContainer: {
