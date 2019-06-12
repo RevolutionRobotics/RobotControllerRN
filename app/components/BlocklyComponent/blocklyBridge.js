@@ -1,14 +1,4 @@
 const bridgeCode = () => {
-  var styleOverride = document.createElement('style');
-  styleOverride.type = 'text/css';
-  styleOverride.innerHTML = `
-    .blocklyMainBackground {
-      stroke: black;
-    }
-  `;
-
-  document.head.appendChild(styleOverride);
-
   var generateOutput = function() {
     var xmlDom = Blockly.Xml.workspaceToDom(workspace);
 
