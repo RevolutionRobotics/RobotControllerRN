@@ -32,6 +32,11 @@ const ButtonAssignmentReducer = (state = initialState, action) => {
       ]));
     case Actions.REMOVE_BUTTON_ASSIGNMENT:
       return save(state.set(assignmentKey, removeAssignment(state, action)));
+    case Actions.UPDATE_BACKGROUND_TASKS:
+      return save(state.set(assignmentKey, [
+        ...state.get(assignmentKey).filter(item => item.btnId !== -1),
+        ...action.assignments
+      ]));
     default:
       return state;
   }
