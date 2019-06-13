@@ -14,6 +14,8 @@ export default StyleSheet.create({
   },
   inputDialogTitle: {
     ...defaultValues.dialogTitle,
+    flex: 1,
+    paddingHorizontal: 10
   },
   inputDialogItem: {
     padding: 15

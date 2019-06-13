@@ -17,3 +17,8 @@ export const removeButtonAssignment = (layoutId, btnId) => ({
   layoutId,
   btnId
 });
+
+export const updateBackgroundTasks = assignments => ({
+  type: Actions.UPDATE_BACKGROUND_TASKS,
+  assignments
+});

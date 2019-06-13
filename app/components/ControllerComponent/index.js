@@ -20,6 +20,7 @@ import DataSync from 'utilities/DataSync';
 import AppConfig from 'utilities/AppConfig';
 import MultiTouchComponent from 'widgets/MultiTouchComponent';
 import ListSelectionDialog from 'widgets/ListSelectionDialog';
+import MultiSelectionDialog from 'widgets/MultiSelectionDialog';
 import { connect } from 'react-redux';
 import styles from './styles';
 import * as bleAction from 'actions/BleAction';
@@ -75,6 +76,7 @@ class ControllerComponent extends Component {
       sendTimer: null,
       settingsMode: false,
       assigningButton: null,
+      assigningBackgroundTask: false,
       joystickX: 0,
       joystickY: 0,
       buttonsInput: 0,
@@ -278,6 +280,8 @@ class ControllerComponent extends Component {
           'Nothing to assign', 
           'There are no Blockly scripts saved yet.'
         );
+      } else if (btnId === btnBackgroundTask) {
+        this.setState({ assigningBackgroundTask: true });
       } else {
         this.setState({ assigningButton: btnId });
       }
@@ -332,7 +336,7 @@ class ControllerComponent extends Component {
     const y = event.coordinates.dy;
 
     const phiRad = Math.atan2(-y, x);
-    const r = Math.min(joystickSize / 2, Math.sqrt(x * x + y * y));
+    const r = Math.min(joystickSize / 2, Math.sqrt(x ** 2 + y ** 2));
 
     const joystickX = r * Math.cos(phiRad);
     const joystickY = r * Math.sin(phiRad + Math.PI);
@@ -392,6 +396,31 @@ class ControllerComponent extends Component {
     />
   );
 
+  renderBackgroundTaskList = () => this.state.assigningBackgroundTask && (
+    <MultiSelectionDialog
+      dialogTitle={'Background codes'}
+      listItems={this.props.savedList.map(blockly => ({
+        name: blockly.name,
+        checked: this.props.buttonAssignments.some(item => (
+          item.blocklyName === blockly.name && item.btnId === btnBackgroundTask
+        ))
+      }))}
+      onItemsSelected={items => {
+        const modifiedAssignments = items
+          .filter(item => item.checked)
+          .map(item => ({
+            layoutId: 0,
+            btnId: btnBackgroundTask,
+            blocklyName: item.name
+          }));
+
+        this.props.updateBackgroundTasks(modifiedAssignments);
+        this.setState({ assigningBackgroundTask: false });
+      }}
+      onRequestClose={() => this.setState({ assigningBackgroundTask: false })}
+    />
+  );
+
   promptUnassign = btnId => {
     const selectedBlockly = this.props.buttonAssignments.find(item => (
       item.layoutId === this.state.layoutId && item.btnId === btnId
@@ -411,7 +440,7 @@ class ControllerComponent extends Component {
       `Do you want to unassign blockly for this button?`,
       () => this.props.removeButtonAssignment(this.state.layoutId, btnId)
     );
-  }
+  };
 
   interpolate = value => (
     Math.floor((value + joystickSize / 2) * (255 / joystickSize))
@@ -432,6 +461,7 @@ class ControllerComponent extends Component {
 
           {this.renderButtons()}
           {this.renderAssignList()}
+          {this.renderBackgroundTaskList()}
           {this.renderSyncDialog()}
         </MultiTouchComponent>
       </SafeAreaView>
@@ -451,6 +481,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = dispatch => ({
   addButtonAssignment: (layoutId, btnId, blocklyName) => dispatch(assignmentAction.addButtonAssignment(layoutId, btnId, blocklyName)),
   removeButtonAssignment: (layoutId, btnId) => dispatch(assignmentAction.removeButtonAssignment(layoutId, btnId)),
+  updateBackgroundTasks: assignments => dispatch(assignmentAction.updateBackgroundTasks(assignments)),
   setRobotServices: services => dispatch(bleAction.setRobotServices(services))
 });
 

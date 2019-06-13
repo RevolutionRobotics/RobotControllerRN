@@ -36,5 +36,19 @@ export default StyleSheet.create({
     ...defaultValues.dialogButtonLabel,
     bottom: 10,
     fontSize: 30
-  }
+  },
+  listDialogButtonPositive: defaultValues.dialogButton,
+  listDialogLabelPositive: {
+    ...defaultValues.dialogButtonLabel,
+    bottom: 10,
+    fontSize: 18,
+    color: 'white'
+  },
+  listDialogButtonContainer: {
+    width: '100%',
+    height: 50,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end'
+  },
 });

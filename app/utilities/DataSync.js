@@ -29,22 +29,53 @@ export default class DataSync {
       config.name === props.selectedName
     ));
 
-    const blocklies = props.savedList
+    const blocklies = [{
+      builtinScriptName: 'drive_joystick',
+      assignments: {
+        analog: [{
+          channels: [0, 1],
+          priority: 0
+        }]
+      }
+    }];
+
+    props.savedList
       .filter(blockly => (
         assignments.some(assignment => assignment.blocklyName === blockly.name)
       ))
-      .map(blockly => ({
-        pythonCode: blockly.pythonCode || '',
-        assignments: assignments
+      .forEach(blockly => {
+        const assignmentObject = {};
+
+        assignments
           .filter(assignment => assignment.blocklyName === blockly.name)
-          .map(assignment => ({ 
-            layoutId: assignment.layoutId,
-            btnId: assignment.btnId
-          }))
-      }));
+          .forEach(assignment => {
+            if (assignment.btnId === -1) {
+              assignmentObject['background'] = 2;
+            } else {
+              if (!assignmentObject.buttons) {
+                assignmentObject.buttons = [];
+              }
+
+              assignmentObject.buttons.push({ 
+                id: assignment.btnId,
+                priority: 1
+              });
+            }
+          });
+
+        blocklies.push({
+          pythonCode: blockly.pythonCode || '',
+          assignments: assignmentObject
+        });
+      });
+
+    const config = (savedConfig || AppConfig.defaultRobotConfig('')).ports;
+    const configObject = Object.assign({}, ...config.map(item => ({
+      [item.title.toLowerCase()]: item.data
+    })));
 
     return JSON.stringify({
-      robotConfig: (savedConfig || AppConfig.defaultRobotConfig('')).ports,
+      robotConfig: configObject,
       blocklyList: blocklies
     }).split('').map(c => c.charCodeAt());
   };
