@@ -64,7 +64,9 @@ export default class DataSync {
           });
 
         blocklies.push({
-          pythonCode: blockly.pythonCode || '',
+          pythonCode: blockly.pythonCode
+            ? base64.fromByteArray(DataSync.byteArray(blockly.pythonCode))
+            : '',
           assignments: assignmentObject
         });
       });
@@ -74,11 +76,13 @@ export default class DataSync {
       [item.title.toLowerCase()]: item.data
     })));
 
-    return JSON.stringify({
+    return DataSync.byteArray(JSON.stringify({
       robotConfig: configObject,
       blocklyList: blocklies
-    }).split('').map(c => c.charCodeAt());
+    }));
   };
+
+  static byteArray = str => str.split('').map(c => c.charCodeAt()); 
 
   static sync = (props, callback) => {  // TODO: rename. this is only doing configsending
     const byteArray = DataSync.buildConfigurationMessage(props);
